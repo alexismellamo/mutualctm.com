@@ -73,6 +73,21 @@ const SearchPanel: Component<Props> = (props) => {
     return parts.join(' ');
   };
 
+  const getVigencyStatus = (user: User) => {
+    if (!user.vigencia) {
+      return { text: 'Sin vigencia', color: 'text-gray-500' };
+    }
+
+    const vigencyDate = new Date(user.vigencia);
+    const today = new Date();
+
+    if (vigencyDate > today) {
+      return { text: 'Vigente', color: 'text-ctm-green' };
+    } else {
+      return { text: 'Vencida', color: 'text-red-600' };
+    }
+  };
+
   return (
     <div class="card">
       <div class="space-y-4">
@@ -135,23 +150,23 @@ const SearchPanel: Component<Props> = (props) => {
             </p>
 
             {/* Users Grid - Horizontal layout */}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-64 overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               <For each={users()}>
                 {(user) => (
                   <button
                     type="button"
-                    class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors text-left"
-                    onClick={() => props.onUserSelect(user)}
+                    class="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 hover:shadow-md hover:scale-105 cursor-pointer transition-all duration-200 text-left transform"
+                    onClick={() => {
+                      props.onUserSelect(user);
+                      setSearchQuery('');
+                      setUsers([]);
+                    }}
                   >
                     <div class="font-medium text-ctm-text text-sm">{formatUserName(user)}</div>
                     <div class="text-xs text-gray-600 mt-1 space-y-1">
                       <div>Cred: {user.credencialNum}</div>
                       <div>Tel: {user.phoneMx}</div>
-                      {user.lastVigencyAt ? (
-                        <div class="text-ctm-green">Vigente</div>
-                      ) : (
-                        <div class="text-ctm-amber">Sin vigencia</div>
-                      )}
+                      <div class={getVigencyStatus(user).color}>{getVigencyStatus(user).text}</div>
                     </div>
                   </button>
                 )}
