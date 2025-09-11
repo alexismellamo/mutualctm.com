@@ -83,9 +83,8 @@ const SearchPanel: Component<Props> = (props) => {
 
     if (vigencyDate > today) {
       return { text: 'Vigente', color: 'text-ctm-green' };
-    } else {
-      return { text: 'Vencida', color: 'text-red-600' };
     }
+    return { text: 'Vencida', color: 'text-red-600' };
   };
 
   return (

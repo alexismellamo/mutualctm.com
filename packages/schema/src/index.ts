@@ -48,9 +48,9 @@ export const applyVigencySchema = z.object({
 
 // Settings schemas
 export const updateSettingsSchema = z.object({
-  ajustadorColima: z.string().min(1, 'Ajustador Colima requerido'),
-  ajustadorTecoman: z.string().min(1, 'Ajustador Tecomán requerido'),
-  ajustadorManzanillo: z.string().min(1, 'Ajustador Manzanillo requerido'),
+  ajustadorColima: z.string().regex(/^\d{10}$/, 'Teléfono debe tener 10 dígitos'),
+  ajustadorTecoman: z.string().regex(/^\d{10}$/, 'Teléfono debe tener 10 dígitos'),
+  ajustadorManzanillo: z.string().regex(/^\d{10}$/, 'Teléfono debe tener 10 dígitos'),
 });
 
 // File upload schemas

@@ -1,6 +1,8 @@
+import { Route, Router } from '@solidjs/router';
 import { type Component, Show, onMount } from 'solid-js';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
+import SettingsPage from './pages/SettingsPage';
 import { authStore } from './stores/auth';
 
 const App: Component = () => {
@@ -20,7 +22,10 @@ const App: Component = () => {
         }
       >
         <Show when={authStore.admin()} fallback={<LoginPage onLogin={() => {}} />}>
-          <DashboardPage onLogout={() => {}} />
+          <Router>
+            <Route path="/" component={DashboardPage} />
+            <Route path="/settings" component={SettingsPage} />
+          </Router>
         </Show>
       </Show>
     </div>

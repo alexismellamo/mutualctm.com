@@ -22,14 +22,17 @@ async function main() {
 
   console.log(`✅ Admin created: ${admin.email}`);
 
-  // Create default settings
   const settings = await prisma.settings.upsert({
     where: { id: 1 },
-    update: {},
+    update: {
+      ajustadorColima: '3121020805',
+      ajustadorTecoman: '3131202631',
+      ajustadorManzanillo: '3141351075',
+    },
     create: {
-      ajustadorColima: '12345',
-      ajustadorTecoman: '67890',
-      ajustadorManzanillo: '54321',
+      ajustadorColima: '3121020805',
+      ajustadorTecoman: '3131202631',
+      ajustadorManzanillo: '3141351075',
     },
   });
 

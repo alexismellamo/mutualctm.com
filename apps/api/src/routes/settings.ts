@@ -11,9 +11,9 @@ export const settingsRoutes = new Elysia({ prefix: '/settings' })
     if (!settings) {
       const defaultSettings = await prisma.settings.create({
         data: {
-          ajustadorColima: '',
-          ajustadorTecoman: '',
-          ajustadorManzanillo: '',
+          ajustadorColima: '3121020805',
+          ajustadorTecoman: '3131202631',
+          ajustadorManzanillo: '3141351075',
         },
       });
       return { settings: defaultSettings };
@@ -89,9 +89,9 @@ export const settingsRoutes = new Elysia({ prefix: '/settings' })
           where: { id: 1 },
           update: { presidenteFirmaPath: relativePath },
           create: {
-            ajustadorColima: '',
-            ajustadorTecoman: '',
-            ajustadorManzanillo: '',
+            ajustadorColima: '3121020805',
+            ajustadorTecoman: '3131202631',
+            ajustadorManzanillo: '3141351075',
             presidenteFirmaPath: relativePath,
           },
         });

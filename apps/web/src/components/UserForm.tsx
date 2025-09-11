@@ -9,7 +9,6 @@ type Props = {
 };
 
 const UserForm: Component<Props> = (props) => {
-  // Calculate default vigencia (1 year from now)
   const getDefaultVigencia = () => {
     const today = new Date();
     const oneYearFromNow = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
@@ -46,21 +45,14 @@ const UserForm: Component<Props> = (props) => {
   // Load user data when user changes
   createEffect(() => {
     const user = props.user;
+    console.log(user?.vigencia);
     if (user) {
       setFormData({
         firstName: user.firstName,
         lastName: user.lastName,
         secondLastName: user.secondLastName || '',
         dob: user.dob.split('T')[0], // Convert to YYYY-MM-DD format
-        vigencia: user.vigencia
-          ? (() => {
-              const storedDate = new Date(user.vigencia);
-              const defaultDate = new Date(getDefaultVigencia());
-              return storedDate > defaultDate
-                ? storedDate.toISOString().split('T')[0]
-                : getDefaultVigencia();
-            })()
-          : getDefaultVigencia(),
+        vigencia: user.vigencia ? user.vigencia.split('T')[0] : getDefaultVigencia(),
         phoneMx: user.phoneMx,
         credencialNum: user.credencialNum,
         gafeteNum: user.gafeteNum,
@@ -277,10 +269,17 @@ const UserForm: Component<Props> = (props) => {
                   id="vigencia"
                   type="date"
                   required
-                  class="input-field"
+                  class="input-field w-full"
                   value={formData().vigencia}
                   onInput={(e) => updateFormData('vigencia', e.currentTarget.value)}
                 />
+                <button
+                  type="button"
+                  class="mt-1 px-2 py-1 text-xs text-ctm-primary border border-ctm-primary rounded hover:bg-ctm-primary/10 transition-colors duration-200"
+                  onClick={() => updateFormData('vigencia', getDefaultVigencia())}
+                >
+                  + 1 año
+                </button>
               </div>
               <div>
                 <label for="phoneMx" class="block text-sm font-medium text-gray-700 mb-1">
