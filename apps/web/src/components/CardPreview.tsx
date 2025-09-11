@@ -50,7 +50,7 @@ const CardPreview: Component<Props> = (props) => {
   };
 
   return (
-    <div class="card h-full flex flex-col">
+    <div class="card sticky top-8">
       <div class="mb-4 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-ctm-text">Vista Previa</h2>
 
@@ -65,11 +65,11 @@ const CardPreview: Component<Props> = (props) => {
         </Show>
       </div>
 
-      <div class="flex-1 overflow-y-auto">
+      <div>
         <Show
           when={props.user}
           fallback={
-            <div class="h-full flex items-center justify-center text-center text-gray-500">
+            <div class="py-8 flex items-center justify-center text-center text-gray-500">
               <div>
                 <svg
                   class="w-16 h-16 mx-auto mb-4 text-gray-400"

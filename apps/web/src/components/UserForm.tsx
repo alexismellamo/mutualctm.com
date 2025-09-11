@@ -202,7 +202,7 @@ const UserForm: Component<Props> = (props) => {
         </div>
       </Show>
 
-      <form onSubmit={handleSubmit} class="space-y-6">
+      <form id="user-form" onSubmit={handleSubmit} class="space-y-6 pb-20">
         {/* Personal Information with Photo */}
         <div>
           <h3 class="text-md font-medium text-ctm-text mb-4">Información Personal</h3>
@@ -449,18 +449,19 @@ const UserForm: Component<Props> = (props) => {
             </div>
           </div>
         </div>
-
-        {/* Actions */}
-        <div class="flex gap-4 pt-6 border-t">
-          <button
-            type="submit"
-            disabled={isLoading()}
-            class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading() ? 'Guardando...' : props.isNew ? 'Crear Usuario' : 'Actualizar Usuario'}
-          </button>
-        </div>
       </form>
+
+      {/* Sticky Actions */}
+      <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 -mb-6">
+        <button
+          type="submit"
+          form="user-form"
+          disabled={isLoading()}
+          class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading() ? 'Guardando...' : props.isNew ? 'Crear Usuario' : 'Actualizar Usuario'}
+        </button>
+      </div>
     </div>
   );
 };

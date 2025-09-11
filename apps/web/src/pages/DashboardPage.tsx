@@ -95,13 +95,13 @@ const DashboardPage: Component<Props> = (props) => {
         </div>
 
         {/* Two Panel Layout - Bottom */}
-        <div class="grid grid-cols-10 gap-8 h-[calc(100vh-12rem)]">
+        <div class="grid grid-cols-10 gap-8">
           {/* User Form - Left (70%) */}
           <div class="col-span-7">
             <Show
               when={selectedUser() || isCreatingNew()}
               fallback={
-                <div class="card h-full flex items-center justify-center">
+                <div class="card py-12 flex items-center justify-center">
                   <div class="text-center text-gray-500">
                     <svg
                       class="w-12 h-12 mx-auto mb-4 text-gray-400"
