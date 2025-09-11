@@ -1,0 +1,101 @@
+# CTM Credenciales App - Cursor Rules
+
+## 🎯 Project Overview
+This is a **CTM Credential Admin** application for creating, editing, and printing credential cards. 
+Internal app with single admin login running on one server with SQLite.
+
+## 🛠️ Tech Stack
+- **Frontend**: SolidJS + Vite (CSR), Tailwind CSS
+- **Backend**: Bun + Elysia, Zod validation, Prisma ORM
+- **Database**: SQLite with WAL mode
+- **Auth**: Single admin, argon2 hash, cookie sessions
+- **Storage**: Local filesystem for signatures and assets
+- **Language**: Spanish (MX) labels in UI
+
+## 📁 Project Structure
+```
+ctm-credenciales-app/
+├── apps/
+│   ├── api/          # Bun + Elysia backend
+│   └── web/          # SolidJS frontend
+├── packages/
+│   ├── db/           # Prisma schema and migrations
+│   └── schema/       # Shared Zod schemas
+├── data/             # SQLite databases
+└── storage/          # User signatures and assets
+```
+
+## 🎨 React/SolidJS Rules
+- Import React/Solid types explicitly: `import type {FC} from 'react'` or `import {createSignal} from 'solid-js'`
+- **ALWAYS USE TYPE, NEVER INTERFACE** in TypeScript (only when needed)
+- **NO COMMENTS** in code or you will be fired (JSDoc is fine)
+- Use ternary operators with null in JSX: `{condition ? <Component /> : null}`
+- Prefer `<Component myBoolean />` instead of `<Component myBoolean={true} />`
+- Don't use `as any` without permission - proper types are better
+- Avoid nested ternaries for readability
+
+## 🌍 Localization
+- All UI labels in **Spanish (Mexico)**
+- Date format: `dd/mm/yyyy`
+- Phone format: Mexican 10-digit validation
+
+## 🎨 Design System
+- **Colors**:
+  - Primary red: `#D32F2F`
+  - Green rule: `#2E7D32`
+  - Accent amber: `#FFA000`
+  - Text: `#111`
+- **Card Dimensions**: CR80 (85.6mm x 54mm) exact sizing
+- **Typography**: System sans, mono numerics for IDs
+- **Layout**: Three-pane dashboard (search, form, preview)
+
+## 🖨️ Print Requirements
+- Exact physical sizing with mm units
+- Print CSS with `@media print`
+- Support for guides overlay and rotation
+- Calibration instructions for 100% scale, no margins
+
+## 🔧 Code Standards
+- Use **Biome** for linting and formatting
+- **Bun** for package management and runtime
+- Validate all inputs with **Zod**
+- HttpOnly cookies for auth
+- Rate limiting for login attempts
+
+## 📋 Core Features Checklist
+- [x] Project bootstrap with Bun + Biome
+- [ ] Prisma schema and migrations
+- [ ] Elysia API with auth middleware
+- [ ] SolidJS three-pane dashboard
+- [ ] Card preview with CTM design
+- [ ] Print system with exact sizing
+- [ ] Spanish UI labels
+- [ ] File upload handling
+- [ ] Search functionality
+- [ ] Settings management
+
+## 🚀 Development Commands
+```bash
+bun run setup      # Install deps, generate DB, migrate, seed
+bun run dev        # Start both API and web dev servers
+bun run build      # Build all packages
+bun run check      # Run Biome checks and fixes
+```
+
+## 📏 Print Calibration
+When printing credentials:
+1. Set printer to **100% scale** 
+2. **No margins**
+3. Disable headers/footers
+4. Use calibration guide (50mm reference line)
+
+## 🔒 Security Notes
+- Session cookies: HttpOnly, SameSite=Lax, 7d expiry
+- File upload: PNG/JPEG only, max 2MB
+- Never expose absolute server paths
+- Argon2 password hashing
+- Simple in-memory rate limiting
+
+---
+*This is a monorepo using Bun workspaces. Always use `bun` instead of `npm`/`yarn`.*
+
