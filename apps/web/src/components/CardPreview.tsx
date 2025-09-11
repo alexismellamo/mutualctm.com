@@ -40,6 +40,11 @@ const CardPreview: Component<Props> = (props) => {
     return formatDate(user.vigencia);
   };
 
+  const getPhotoUrl = (user: User) => {
+    if (!user.id || !user.photoPath) return null;
+    return `/api/v1/users/${user.id}/photo?t=${Date.now()}`;
+  };
+
   const handlePrint = () => {
     window.print();
   };
@@ -71,8 +76,9 @@ const CardPreview: Component<Props> = (props) => {
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  role="img"
+                  aria-label="Icono de vista previa"
                 >
-                  <title>Icono de vista previa</title>
                   <path
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -116,13 +122,37 @@ const CardPreview: Component<Props> = (props) => {
                     <span class="text-white text-xs p-1">Válida en caso de accidente vial</span>
                   </div>
 
-                  {/* Photo placeholder */}
-                  <div class="absolute left-2 top-12 w-16 h-20 bg-gray-200 rounded border flex items-center justify-center">
-                    <span class="text-gray-500 text-xs">FOTO</span>
+                  {/* User Photo - Back on the left side but larger and better */}
+                  <div class="absolute left-2 top-12 w-18 h-22 rounded border-2 border-gray-600 overflow-hidden bg-white shadow-sm">
+                    <Show
+                      when={props.user && getPhotoUrl(props.user)}
+                      fallback={
+                        <div class="w-full h-full flex items-center justify-center">
+                          <div class="text-center text-gray-500">
+                            <svg
+                              class="w-6 h-6 mx-auto mb-1"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                              role="img"
+                              aria-label="Person icon"
+                            >
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                            </svg>
+                            <span class="text-xs">FOTO</span>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <img
+                        src={props.user ? getPhotoUrl(props.user) || '' : ''}
+                        alt="Foto del usuario"
+                        class="w-full h-full object-cover print:object-cover"
+                      />
+                    </Show>
                   </div>
 
                   {/* User name */}
-                  <div class="absolute left-20 top-12 right-8">
+                  <div class="absolute left-22 top-12 right-8">
                     <div class="font-bold text-sm leading-tight">
                       {formatUserName(props.user || undefined)}
                     </div>
@@ -137,7 +167,7 @@ const CardPreview: Component<Props> = (props) => {
                   </div>
 
                   {/* Address */}
-                  <div class="absolute left-20 top-20 right-8 text-xs">
+                  <div class="absolute left-22 top-20 right-8 text-xs">
                     <div class="mb-1">
                       <span class="font-semibold">Con domicilio en:</span>
                     </div>

@@ -1,5 +1,6 @@
 import { type Component, Show, createEffect, createSignal } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
+import PhotoManager from './PhotoManager';
 
 type Props = {
   user: User | null;
@@ -40,6 +41,7 @@ const UserForm: Component<Props> = (props) => {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal('');
   const [success, setSuccess] = createSignal('');
+  const [selectedPhoto, setSelectedPhoto] = createSignal<Blob | null>(null);
 
   // Load user data when user changes
   createEffect(() => {
@@ -145,6 +147,33 @@ const UserForm: Component<Props> = (props) => {
       }
 
       setSuccess(result.message);
+
+      // Upload photo if one was selected
+      const photo = selectedPhoto();
+      if (photo && result.user?.id) {
+        try {
+          const formData = new FormData();
+          formData.append('file', photo, `photo-${Date.now()}.jpg`);
+
+          const photoResponse = await fetch(`/api/v1/users/${result.user.id}/photo`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+
+          if (photoResponse.ok) {
+            const photoResult = await photoResponse.json();
+            // Update user with photo path
+            result.user.photoPath = photoResult.path;
+            setSuccess(`${result.message} Foto guardada exitosamente.`);
+          } else {
+            setError('Usuario guardado pero error al subir la foto');
+          }
+        } catch (photoErr) {
+          setError('Usuario guardado pero error al subir la foto');
+        }
+      }
+
       props.onUserSaved(result.user);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido');
@@ -174,114 +203,126 @@ const UserForm: Component<Props> = (props) => {
       </Show>
 
       <form onSubmit={handleSubmit} class="space-y-6">
-        {/* Personal Information */}
+        {/* Personal Information with Photo */}
         <div>
           <h3 class="text-md font-medium text-ctm-text mb-4">Información Personal</h3>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">
-                Nombre *
-              </label>
-              <input
-                id="firstName"
-                type="text"
-                required
-                class="input-field"
-                value={formData().firstName}
-                onInput={(e) => updateFormData('firstName', e.currentTarget.value)}
+          <div class="grid grid-cols-3 gap-6">
+            {/* Left Column - Photo only */}
+            <div class="col-span-1">
+              <PhotoManager
+                userId={props.user?.id}
+                currentPhotoPath={props.user?.photoPath}
+                onPhotoSelected={setSelectedPhoto}
               />
             </div>
-            <div>
-              <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">
-                Apellido Paterno *
-              </label>
-              <input
-                id="lastName"
-                type="text"
-                required
-                class="input-field"
-                value={formData().lastName}
-                onInput={(e) => updateFormData('lastName', e.currentTarget.value)}
-              />
-            </div>
-            <div>
-              <label for="secondLastName" class="block text-sm font-medium text-gray-700 mb-1">
-                Apellido Materno
-              </label>
-              <input
-                id="secondLastName"
-                type="text"
-                class="input-field"
-                value={formData().secondLastName}
-                onInput={(e) => updateFormData('secondLastName', e.currentTarget.value)}
-              />
-            </div>
-            <div>
-              <label for="dob" class="block text-sm font-medium text-gray-700 mb-1">
-                Fecha de Nacimiento *
-              </label>
-              <input
-                id="dob"
-                type="date"
-                required
-                class="input-field"
-                value={formData().dob}
-                onInput={(e) => updateFormData('dob', e.currentTarget.value)}
-              />
-            </div>
-            <div>
-              <label for="vigencia" class="block text-sm font-medium text-gray-700 mb-1">
-                Fecha de Vigencia *
-              </label>
-              <input
-                id="vigencia"
-                type="date"
-                required
-                class="input-field"
-                value={formData().vigencia}
-                onInput={(e) => updateFormData('vigencia', e.currentTarget.value)}
-              />
-            </div>
-            <div>
-              <label for="phoneMx" class="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono (10 dígitos) *
-              </label>
-              <input
-                id="phoneMx"
-                type="tel"
-                required
-                pattern="[0-9]{10}"
-                class="input-field"
-                placeholder="3121234567"
-                value={formData().phoneMx}
-                onInput={(e) => updateFormData('phoneMx', e.currentTarget.value)}
-              />
-            </div>
-            <div>
-              <label for="credencialNum" class="block text-sm font-medium text-gray-700 mb-1">
-                Número de Credencial *
-              </label>
-              <input
-                id="credencialNum"
-                type="text"
-                required
-                class="input-field"
-                value={formData().credencialNum}
-                onInput={(e) => updateFormData('credencialNum', e.currentTarget.value)}
-              />
-            </div>
-            <div class="col-span-2">
-              <label for="gafeteNum" class="block text-sm font-medium text-gray-700 mb-1">
-                Número de Gafete *
-              </label>
-              <input
-                id="gafeteNum"
-                type="text"
-                required
-                class="input-field"
-                value={formData().gafeteNum}
-                onInput={(e) => updateFormData('gafeteNum', e.currentTarget.value)}
-              />
+
+            {/* Right Columns - All form fields */}
+            <div class="col-span-2 grid grid-cols-2 gap-4">
+              <div>
+                <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre *
+                </label>
+                <input
+                  id="firstName"
+                  type="text"
+                  required
+                  class="input-field"
+                  value={formData().firstName}
+                  onInput={(e) => updateFormData('firstName', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="lastName" class="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido Paterno *
+                </label>
+                <input
+                  id="lastName"
+                  type="text"
+                  required
+                  class="input-field"
+                  value={formData().lastName}
+                  onInput={(e) => updateFormData('lastName', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="secondLastName" class="block text-sm font-medium text-gray-700 mb-1">
+                  Apellido Materno
+                </label>
+                <input
+                  id="secondLastName"
+                  type="text"
+                  class="input-field"
+                  value={formData().secondLastName}
+                  onInput={(e) => updateFormData('secondLastName', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="dob" class="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha de Nacimiento *
+                </label>
+                <input
+                  id="dob"
+                  type="date"
+                  required
+                  class="input-field"
+                  value={formData().dob}
+                  onInput={(e) => updateFormData('dob', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="vigencia" class="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha de Vigencia *
+                </label>
+                <input
+                  id="vigencia"
+                  type="date"
+                  required
+                  class="input-field"
+                  value={formData().vigencia}
+                  onInput={(e) => updateFormData('vigencia', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="phoneMx" class="block text-sm font-medium text-gray-700 mb-1">
+                  Teléfono (10 dígitos) *
+                </label>
+                <input
+                  id="phoneMx"
+                  type="tel"
+                  required
+                  pattern="[0-9]{10}"
+                  class="input-field"
+                  placeholder="3121234567"
+                  value={formData().phoneMx}
+                  onInput={(e) => updateFormData('phoneMx', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="credencialNum" class="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Credencial *
+                </label>
+                <input
+                  id="credencialNum"
+                  type="text"
+                  required
+                  class="input-field"
+                  value={formData().credencialNum}
+                  onInput={(e) => updateFormData('credencialNum', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="gafeteNum" class="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Gafete *
+                </label>
+                <input
+                  id="gafeteNum"
+                  type="text"
+                  required
+                  class="input-field"
+                  value={formData().gafeteNum}
+                  onInput={(e) => updateFormData('gafeteNum', e.currentTarget.value)}
+                />
+              </div>
             </div>
           </div>
         </div>

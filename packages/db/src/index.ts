@@ -1,8 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 
+// Augment globalThis to include our Prisma instance
 declare global {
-  // biome-ignore lint/style/noVar: Global declaration needs var
-  var __prisma: PrismaClient | undefined;
+  namespace globalThis {
+    var __prisma: PrismaClient | undefined;
+  }
 }
 
 let prisma: PrismaClient;
@@ -20,4 +22,3 @@ if (process.env.NODE_ENV === 'production') {
 
 export { prisma };
 export * from '@prisma/client';
-

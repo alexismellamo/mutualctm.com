@@ -18,10 +18,6 @@
       "@ctm/schema": ["../../packages/schema/src"]
     }
   },
-  "include": [
-    "src/**/*",
-    "../../packages/db/src/**/*",
-    "../../packages/schema/src/**/*"
-  ],
+  "include": ["src/**/*", "../../packages/db/src/**/*", "../../packages/schema/src/**/*"],
   "exclude": ["node_modules", "dist"]
 }

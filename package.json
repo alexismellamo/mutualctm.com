@@ -19,12 +19,14 @@
     "db:studio": "(cd packages/db && bun run studio)",
     "setup": "bun install && bun run db:generate && bun run db:migrate && bun run db:seed",
     "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules",
-    "lint": "biome lint .",
-    "lint:fix": "biome lint --apply .",
+    "lint": "biome check . && bun run type-check:web && bun run type-check:api",
+    "lint:fix": "biome check --write . && bun run type-check:web && bun run type-check:api",
     "format": "biome format --write .",
     "check": "biome check .",
-    "check:fix": "biome check --apply .",
-    "type-check": "tsc --noEmit"
+    "check:fix": "biome check --write .",
+    "type-check": "bun run type-check:web && bun run type-check:api",
+    "type-check:web": "(cd apps/web && bunx tsc --noEmit)",
+    "type-check:api": "(cd apps/api && bunx tsc --noEmit)"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

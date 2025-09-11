@@ -50,6 +50,7 @@ model User {
   phoneMx        String
   credencialNum  String
   gafeteNum      String
+  photoPath      String?
   signaturePath  String?
   lastVigencyAt  DateTime?
   createdAt      DateTime       @default(now())

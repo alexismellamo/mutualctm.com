@@ -14,6 +14,7 @@ export type User = {
   phoneMx: string;
   credencialNum: string;
   gafeteNum: string;
+  photoPath?: string;
   signaturePath?: string;
   lastVigencyAt?: string;
   createdAt: string;

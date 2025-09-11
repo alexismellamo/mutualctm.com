@@ -10,10 +10,9 @@ export default {
         'ctm-text': '#111',
       },
       fontFamily: {
-        'mono': ['ui-monospace', 'SFMono-Regular', 'monospace'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
       },
     },
   },
   plugins: [],
 };
-

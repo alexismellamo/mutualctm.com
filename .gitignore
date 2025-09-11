@@ -132,6 +132,8 @@ storage/signatures/*
 !storage/signatures/.gitkeep
 storage/assets/*
 !storage/assets/.gitkeep
+storage/photos/*
+!storage/photos/.gitkeep
 
 # Prisma
 prisma/migrations/*.sql

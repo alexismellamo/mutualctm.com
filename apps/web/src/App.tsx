@@ -8,11 +8,6 @@ const App: Component = () => {
     await authStore.checkAuth();
   });
 
-  const navigateTo = (page: 'login' | 'dashboard') => {
-    // This function will be used by child components but actual navigation
-    // is handled by the reactive Show components below
-  };
-
   return (
     <div class="min-h-screen">
       <Show

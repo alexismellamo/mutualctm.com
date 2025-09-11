@@ -10,7 +10,7 @@ async function main() {
 
   // Create admin user
   const hashedPassword = await hash(adminPassword);
-  
+
   const admin = await prisma.admin.upsert({
     where: { email: adminEmail },
     update: {},
@@ -46,4 +46,3 @@ main()
   .finally(async () => {
     await prisma.$disconnect();
   });
-
