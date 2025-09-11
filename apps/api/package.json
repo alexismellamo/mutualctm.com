@@ -9,7 +9,13 @@
     "dev": "bun run --hot src/index.ts",
     "build": "bun build src/index.ts --outdir ./dist --target bun",
     "start": "bun run dist/index.js",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "lint": "biome check . && bunx tsc --noEmit",
+    "lint:fix": "biome check --write . && bunx tsc --noEmit",
+    "type-check": "bunx tsc --noEmit",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
   },
   "dependencies": {
     "@ctm/db": "workspace:*",

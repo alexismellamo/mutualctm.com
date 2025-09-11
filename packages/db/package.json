@@ -12,7 +12,18 @@
     "migrate:prod": "prisma migrate deploy",
     "studio": "prisma studio",
     "seed": "bun run src/seed.ts",
-    "reset": "prisma migrate reset --force"
+    "reset": "prisma migrate reset --force",
+    "clean": "rm -rf dist",
+    "lint": "biome check . && bunx tsc --noEmit",
+    "lint:fix": "biome check --write . && bunx tsc --noEmit",
+    "type-check": "bunx tsc --noEmit",
+    "format": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write .",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "bun run src/seed.ts",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

@@ -121,6 +121,9 @@ Thumbs.db
 # Bun specific
 .bun
 
+# Turborepo
+.turbo
+
 # Database files
 data/
 *.db
