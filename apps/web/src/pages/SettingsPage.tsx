@@ -1,5 +1,6 @@
 import { A } from '@solidjs/router';
 import type { Component } from 'solid-js';
+import ctmLogo from '../assets/ctm-logo.png';
 import SettingsPanel from '../components/SettingsPanel';
 import { authStore } from '../stores/auth';
 
@@ -15,9 +16,7 @@ const SettingsPage: Component = () => {
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex justify-between items-center h-16">
             <div class="flex items-center">
-              <div class="w-8 h-8 bg-ctm-red rounded flex items-center justify-center">
-                <span class="text-white font-bold text-sm">CTM</span>
-              </div>
+              <img src={ctmLogo} alt="CTM Logo" class="w-8 h-8 object-contain" />
               <h1 class="ml-3 text-xl font-semibold text-ctm-text">Configuración del Sistema</h1>
             </div>
             <div class="flex items-center space-x-4">
