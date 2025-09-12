@@ -105,7 +105,7 @@ const createObjectCoverCanvas = (
 /**
  * Handles the printing of credential cards using html2canvas
  */
-export const handleCardPrint = async (): Promise<void> => {
+export const handleCardPrint = async (user?: User): Promise<void> => {
   try {
     // Get the front and back card elements
     const frontCard = document.querySelector('.print-front-card') as HTMLElement;
@@ -239,12 +239,17 @@ export const handleCardPrint = async (): Promise<void> => {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
+    // Generate custom filename based on user's name
+    const customTitle = user 
+      ? `CTM_Credencial_${formatUserName(user).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`
+      : 'CTM_Credencial';
+
     // Set up the print page with exact CR-80 sizing
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>CTM Credencial</title>
+          <title>${customTitle}</title>
           <style>
             @page {
               size: 85.6mm 53.98mm;

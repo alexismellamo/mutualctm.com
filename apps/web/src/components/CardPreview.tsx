@@ -43,7 +43,7 @@ const CardPreview: Component<Props> = (props) => {
   });
 
 
-  const handlePrint = () => handleCardPrint();
+  const handlePrint = () => handleCardPrint(props.user || undefined);
 
   return (
     <div class="card sticky top-8">
