@@ -1,4 +1,5 @@
 import { type Component, Show, createSignal, onMount } from 'solid-js';
+import { Portal } from 'solid-js/web';
 import ctmLogo from '../assets/ctm-logo.png';
 import presidenteSignature from '../assets/presidente-signature.jpeg';
 import type { User } from '../pages/DashboardPage';
@@ -27,6 +28,7 @@ type Props = {
 
 const CardPreview: Component<Props> = (props) => {
   const [settings, setSettings] = createSignal<Settings | null>(null);
+  const [isPrinting, setIsPrinting] = createSignal(false);
 
   onMount(async () => {
     try {
@@ -43,7 +45,14 @@ const CardPreview: Component<Props> = (props) => {
   });
 
 
-  const handlePrint = () => handleCardPrint(props.user || undefined);
+  const handlePrint = async () => {
+    setIsPrinting(true);
+    try {
+      await handleCardPrint(props.user || undefined);
+    } finally {
+      setIsPrinting(false);
+    }
+  };
 
   return (
     <div class="card sticky top-8">
@@ -52,11 +61,12 @@ const CardPreview: Component<Props> = (props) => {
 
         <Show when={props.user}>
           <button
-            class="text-sm px-4 py-2 bg-ctm-red text-white rounded-lg hover:bg-red-700 transition-colors"
+            class="text-sm px-4 py-2 bg-ctm-red text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handlePrint}
+            disabled={isPrinting()}
             type="button"
           >
-            Imprimir Credencial
+            {isPrinting() ? 'Preparando...' : 'Imprimir Credencial'}
           </button>
         </Show>
       </div>
@@ -356,6 +366,19 @@ const CardPreview: Component<Props> = (props) => {
             <br />• Desactivar encabezados y pies de página
           </div>
         </div>
+      </Show>
+
+      {/* Loading Overlay - Portal to body for true full-screen coverage */}
+      <Show when={isPrinting()}>
+        <Portal>
+          <div class="fixed inset-0 bg-white flex items-center justify-center" style="z-index: 9999;">
+            <div class="bg-white rounded-lg p-8 flex flex-col items-center shadow-2xl">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-ctm-red mb-4"></div>
+              <div class="text-lg font-medium text-gray-900 mb-2">Preparando impresión...</div>
+              <div class="text-sm text-gray-600">Generando credencial de alta calidad</div>
+            </div>
+          </div>
+        </Portal>
       </Show>
     </div>
   );
