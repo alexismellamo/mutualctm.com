@@ -31,23 +31,21 @@
 }
 
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: 85.6mm 53.98mm;
+    margin: 0;
   }
 
+  * {
+    visibility: hidden;
+  }
+  
   .print-content,
   .print-content * {
     visibility: visible;
   }
 
-  .print-content {
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-
-  @page {
-    size: 85.6mm 54mm;
-    margin: 0;
+  .screen-card {
+    height: 100vh;
   }
 }

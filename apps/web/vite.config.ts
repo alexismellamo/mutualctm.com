@@ -5,6 +5,7 @@ export default defineConfig({
   plugins: [solid()],
   server: {
     port: 3000,
+    allowedHosts: true,
     proxy: {
       '/api': 'http://localhost:3001',
       '/storage': 'http://localhost:3001',
