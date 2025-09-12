@@ -1,6 +1,6 @@
 import { type Component, Show, createSignal, onMount } from 'solid-js';
 import ctmLogo from '../assets/ctm-logo.png';
-import presidenteSignature from '../assets/presidente-signature.jpeg';
+import presidenteSignature from '../assets/firma.png';
 import type { User } from '../pages/DashboardPage';
 
 type Settings = {
@@ -127,111 +127,149 @@ const CardPreview: Component<Props> = (props) => {
             <div class="text-center">
               <h3 class="text-sm font-medium text-gray-700 mb-2">FRENTE</h3>
               <div
-                class="relative bg-white border border-gray-400 overflow-hidden shadow-lg"
+                class="bg-white border-2 border-gray-600 overflow-hidden shadow-lg flex flex-col"
                 style={{
-                  width: '324px',
-                  height: '204px',
+                  width: '320px',
+                  height: '256px',
                 }}
               >
-                {/* Header with logo */}
-                <div class="absolute top-0 left-0 right-0 bg-ctm-red h-8 flex items-center justify-between px-3">
-                  <span class="text-white font-bold" style="font-size: 8px;">
-                    CONFEDERACIÓN DE TRABAJADORES DE MÉXICO
-                  </span>
-                  <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
+                {/* Header with Logos and Title */}
+                <div class="flex items-center justify-between p-2">
+                  {/* Top Left Logo */}
+                  <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400 flex-shrink-0">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-6 w-6 object-contain" />
+                  </div>
+
+                  {/* Center Title */}
+                  <div class="flex-1 text-center px-2">
+                    <div class="font-bold text-gray-900" style="font-size: 8px; letter-spacing: 0.3px;">
+                      UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
+                    </div>
+                  </div>
+
+                  {/* Top Right Logo */}
+                  <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400 flex-shrink-0">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-6 w-6 object-contain" />
+                  </div>
                 </div>
 
-                {/* Photo */}
-                <div class="absolute left-4 top-12 w-20 h-24 border border-gray-400 overflow-hidden bg-gray-50">
-                  <Show
-                    when={props.user && getPhotoUrl(props.user)}
-                    fallback={
-                      <div class="w-full h-full flex items-center justify-center">
-                        <div class="text-center text-gray-400">
-                          <svg class="w-8 h-8 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                            <title>Foto del usuario</title>
-                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                          </svg>
-                          <span style="font-size: 8px;">FOTO</span>
+                {/* Main Content */}
+                <div class="flex-1 px-4 flex flex-col justify-center text-left">
+
+                  {/* Red and Green Line */}
+                  <div class="flex mb-2">
+                    <div class="flex-1 h-0.5 bg-red-600" />
+                    <div class="flex-1 h-0.5 bg-green-600" />
+                  </div>
+
+                  {/* Photo and All Content Section */}
+                  <div class="flex gap-3 flex-1">
+                    {/* Photo Section with Numbers */}
+                    <div class="flex flex-col w-16 flex-shrink-0">
+                      {/* Photo */}
+                      <div class="h-20 border border-gray-600 overflow-hidden bg-gray-50">
+                        <Show
+                          when={props.user && getPhotoUrl(props.user)}
+                          fallback={
+                            <div class="w-full h-full flex items-center justify-center">
+                              <div class="text-center text-gray-400">
+                                <svg class="w-6 h-6 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                  <title>Foto del usuario</title>
+                                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                </svg>
+                                <span style="font-size: 5px;">FOTO</span>
+                              </div>
+                            </div>
+                          }
+                        >
+                          <img
+                            src={props.user ? getPhotoUrl(props.user) || '' : ''}
+                            alt="Foto del usuario"
+                            class="w-full h-full object-cover"
+                          />
+                        </Show>
+                      </div>
+                      
+                      {/* Credential Numbers */}
+                      <div class="mt-1 text-left" style="font-size: 6px;">
+                        <div class="text-gray-800">
+                          <span class="font-bold">No. CRED:</span>
+                        </div>
+                        <div class="text-gray-900 font-mono">
+                          {props.user?.credencialNum || '000000'}
+                        </div>
+                        <div class="text-gray-800 mt-1">
+                          <span class="font-bold">No. GAF:</span>
+                        </div>
+                        <div class="text-gray-900 font-mono">
+                          {props.user?.gafeteNum || '000000'}
                         </div>
                       </div>
-                    }
-                  >
-                    <img
-                      src={props.user ? getPhotoUrl(props.user) || '' : ''}
-                      alt="Foto del usuario"
-                      class="w-full h-full object-cover"
-                    />
-                  </Show>
-                </div>
-
-                {/* Name */}
-                <div class="absolute left-28 top-12 right-4">
-                  <div class="font-bold text-ctm-text leading-tight" style="font-size: 10px;">
-                    {formatUserName(props.user || undefined)}
-                  </div>
-                </div>
-
-                {/* Address */}
-                <div class="absolute left-28 top-20 right-4 text-gray-700" style="font-size: 8px;">
-                  <div class="mb-1 font-medium">DOMICILIO:</div>
-                  <div class="leading-tight">
-                    {props.user?.address?.street} {props.user?.address?.exteriorNo}
-                    {props.user?.address?.interiorNo
-                      ? ` Int. ${props.user.address.interiorNo}`
-                      : ''}
-                  </div>
-                  <div>{props.user?.address?.neighborhood}</div>
-                  <div>
-                    {props.user?.address?.municipality}, {props.user?.address?.state}
-                  </div>
-                  <div>CP {props.user?.address?.postalCode}</div>
-                </div>
-
-                {/* Phone and Age */}
-                {/* Credential and Gafete Numbers */}
-                <div class="absolute left-28 top-32 right-4 text-gray-700" style="font-size: 8px;">
-                  <div class="grid grid-cols-2 gap-2">
-                    <div>
-                      <span class="font-medium">CREDENCIAL:</span> {props.user?.credencialNum}
                     </div>
-                    <div>
-                      <span class="font-medium">GAFETE:</span> {props.user?.gafeteNum}
+
+                    {/* All Right Content */}
+                    <div class="flex-1 flex flex-col justify-between">
+                      {/* Top Section */}
+                      <div class="space-y-2">
+                        {/* Subtitle */}
+                        <div>
+                          <div class="font-bold text-gray-800" style="font-size: 7px;">
+                            FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
+                          </div>
+                        </div>
+
+                        {/* Validity */}
+                        <div>
+                          <div class="font-medium text-gray-700" style="font-size: 6px;">
+                            Valida en caso de accidente vial
+                          </div>
+                        </div>
+
+                        {/* User Info */}
+                        <div class="mt-3 space-y-1" style="font-size: 8px;">
+                          <div class="text-gray-800">
+                            <span class="font-bold">La presente acredita al C.:</span> <span class="text-gray-900">{formatUserName(props.user || undefined)}</span>
+                          </div>
+                          
+                          <div class="font-bold text-gray-800">
+                            Con Domicilio en:
+                          </div>
+                          <div class="text-gray-900 leading-tight">
+                            <div>{props.user?.address?.street} {props.user?.address?.exteriorNo}, {props.user?.address?.neighborhood}</div>
+                            <div>{props.user?.address?.municipality}, {props.user?.address?.state}, CP {props.user?.address?.postalCode}</div>
+                          </div>
+                          
+                          <div class="text-gray-800 mt-2">
+                            <span class="text-gray-900">{props.user ? calculateAge(props.user.dob) : ''}</span> <span class="font-bold">años</span> - <span class="font-bold">tel:</span> <span class="text-gray-900">{props.user ? formatPhone(props.user.phoneMx) : ''}</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Phone and Age */}
-                <div class="absolute left-4 bottom-20 text-gray-700" style="font-size: 8px;">
-                  <div>
-                    <span class="font-medium">TEL:</span>{' '}
-                    {props.user ? formatPhone(props.user.phoneMx) : ''}
-                  </div>
-                  <div>
-                    <span class="font-medium">EDAD:</span>{' '}
-                    {props.user ? calculateAge(props.user.dob) : ''} años
-                  </div>
-                </div>
 
-                {/* Presidente Signature */}
-                <div class="absolute bottom-8 right-4 text-center">
-                  <div class="h-8 flex items-center justify-center mb-1">
-                    <img
-                      src={presidenteSignature}
-                      alt="Firma Presidente"
-                      class="h-6 object-contain"
-                    />
+                {/* Bottom Section */}
+                <div class="px-4 pb-2 flex justify-between items-end">
+                  {/* Vigency */}
+                  <div style="font-size: 7px;">
+                    <span class="font-bold text-gray-800">
+                      Vigente hasta: {props.user ? getVigencyDate(props.user) : ''}
+                    </span>
                   </div>
-                  <div class="font-bold text-gray-700" style="font-size: 6px;">
-                    PRESIDENTE
-                  </div>
-                </div>
 
-                {/* Vigency */}
-                <div class="absolute bottom-2 left-4 right-4">
-                  <div class="h-0.5 bg-ctm-red mb-1" />
-                  <div class="font-bold text-ctm-red text-center" style="font-size: 8px;">
-                    VIGENTE HASTA: {props.user ? getVigencyDate(props.user) : ''}
+                  {/* Presidente Signature */}
+                  <div class="text-center">
+                    <div class="h-6 flex items-center justify-center mb-1">
+                      <img
+                        src={presidenteSignature}
+                        alt="Firma Presidente"
+                        class="h-4 object-contain"
+                      />
+                    </div>
+                    <div class="font-bold text-gray-700" style="font-size: 5px;">
+                      PRESIDENTE
+                    </div>
                   </div>
                 </div>
               </div>
