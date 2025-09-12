@@ -127,29 +127,29 @@ const CardPreview: Component<Props> = (props) => {
             <div class="text-center">
               <h3 class="text-sm font-medium text-gray-700 mb-2">FRENTE</h3>
               <div
-                class="bg-white border-2 border-gray-600 overflow-hidden shadow-lg flex flex-col"
+                class="bg-white border border-gray-400 overflow-hidden shadow-lg relative"
                 style={{
                   width: '320px',
-                  height: '256px',
+                  height: '200px',
                 }}
               >
                 {/* Header with Logos and Title */}
-                <div class="flex items-center justify-between p-2">
+                <div class="flex items-center justify-between p-1 gap-12">
                   {/* Top Left Logo */}
-                  <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400 flex-shrink-0">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-6 w-6 object-contain" />
+                  <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
                   </div>
 
                   {/* Center Title */}
-                  <div class="flex-1 text-center px-2">
-                    <div class="font-bold text-gray-900" style="font-size: 8px; letter-spacing: 0.3px;">
+                  <div class="flex-1 text-center px-1">
+                    <div class="font-bold text-gray-900" style="font-size: 6px; letter-spacing: 0.2px;">
                       UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
                     </div>
                   </div>
 
                   {/* Top Right Logo */}
-                  <div class="w-10 h-10 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400 flex-shrink-0">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-6 w-6 object-contain" />
+                  <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
                   </div>
                 </div>
 
@@ -210,10 +210,10 @@ const CardPreview: Component<Props> = (props) => {
                     {/* All Right Content */}
                     <div class="flex-1 flex flex-col justify-between">
                       {/* Top Section */}
-                      <div class="space-y-2">
+                      <div class="space-y-1">
                         {/* Subtitle */}
                         <div>
-                          <div class="font-bold text-gray-800" style="font-size: 7px;">
+                          <div class="font-bold text-gray-800 text-center" style="font-size: 7px;">
                             FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
                           </div>
                         </div>
@@ -226,12 +226,13 @@ const CardPreview: Component<Props> = (props) => {
                         </div>
 
                         {/* User Info */}
-                        <div class="mt-3 space-y-1" style="font-size: 8px;">
+                        <div class="mt-1" style="font-size: 8px;">
                           <div class="text-gray-800">
-                            <span class="font-bold">La presente acredita al C.:</span> <span class="text-gray-900">{formatUserName(props.user || undefined)}</span>
+                            <div class="font-bold">La presente acredita al C.:</div>
+                            <div class="text-gray-900 capitalize">{formatUserName(props.user || undefined)?.toLowerCase()}</div>
                           </div>
                           
-                          <div class="font-bold text-gray-800">
+                          <div class="font-bold text-gray-800 mt-1">
                             Con Domicilio en:
                           </div>
                           <div class="text-gray-900 leading-tight">
@@ -249,10 +250,10 @@ const CardPreview: Component<Props> = (props) => {
                 </div>
 
 
-                {/* Bottom Section */}
-                <div class="px-4 pb-2 flex justify-between items-end">
+                {/* Bottom Section - Absolute positioned */}
+                <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                   {/* Vigency */}
-                  <div style="font-size: 7px;">
+                  <div style="font-size: 6px;">
                     <span class="font-bold text-gray-800">
                       Vigente hasta: {props.user ? getVigencyDate(props.user) : ''}
                     </span>
@@ -260,14 +261,14 @@ const CardPreview: Component<Props> = (props) => {
 
                   {/* Presidente Signature */}
                   <div class="text-center">
-                    <div class="h-6 flex items-center justify-center mb-1">
+                    <div class="h-8 flex items-center justify-center mb-1">
                       <img
                         src={presidenteSignature}
                         alt="Firma Presidente"
-                        class="h-4 object-contain"
+                        class="h-6 object-contain"
                       />
                     </div>
-                    <div class="font-bold text-gray-700" style="font-size: 5px;">
+                    <div class="font-bold text-gray-700" style="font-size: 6px;">
                       PRESIDENTE
                     </div>
                   </div>
@@ -281,13 +282,21 @@ const CardPreview: Component<Props> = (props) => {
               <div
                 class="bg-white border border-gray-400 overflow-hidden shadow-lg flex flex-col h-full p-2"
                 style={{
-                  width: '324px',
-                  height: '204px',
+                  width: '320px',
+                  height: '200px',
                 }}
               >
-                {/* Header with logo */}
-                <div class="flex justify-start">
-                  <img src={ctmLogo} alt="CTM Logo" class="h-6 w-6 object-contain" />
+                {/* Header with two logos */}
+                <div class="flex justify-between items-start mb-2">
+                  {/* Top Left Logo */}
+                  <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain" />
+                  </div>
+
+                  {/* Top Right Logo */}
+                  <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain" />
+                  </div>
                 </div>
 
                 {/* Numbers section - taking most space */}
@@ -336,7 +345,7 @@ const CardPreview: Component<Props> = (props) => {
                 </div>
 
                 {/* Bottom section with legal text and signature */}
-                <div class="space-y-2">
+                <div class="space-y-1">
                   {/* Legal Text */}
                   <div class="text-center mb-8">
                     <div class="text-gray-700 leading-tight" style="font-size: 6px;">
