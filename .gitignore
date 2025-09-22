@@ -130,6 +130,9 @@ data/
 *.sqlite
 *.sqlite3
 
+# CSV files
+olddb.csv
+
 # Storage files (user uploads)
 storage/signatures/*
 !storage/signatures/.gitkeep
@@ -151,3 +154,7 @@ storybook-static
 
 # Temporary files
 .tmp/
+
+# Build outputs
+dist/
+build/

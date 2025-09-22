@@ -1,8 +1,8 @@
-import { type Component, Show, createEffect, createSignal } from 'solid-js';
+import { type Component, createEffect, createSignal, Show } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
+import { getSignatureUrl } from '../utils/cardUtils';
 import PhotoManager from './PhotoManager';
 import SignatureModal from './SignatureModal';
-import { getSignatureUrl } from '../utils/cardUtils';
 
 type Props = {
   user: User | null;
@@ -154,7 +154,7 @@ const UserForm: Component<Props> = (props) => {
       // Upload photo if one was selected
       const photo = selectedPhoto();
       const signature = selectedSignature();
-      let uploadErrors: string[] = [];
+      const uploadErrors: string[] = [];
 
       if (photo && result.user?.id) {
         try {
@@ -174,7 +174,7 @@ const UserForm: Component<Props> = (props) => {
           } else {
             uploadErrors.push('error al subir la foto');
           }
-        } catch (photoErr) {
+        } catch (_photoErr) {
           uploadErrors.push('error al subir la foto');
         }
       }
@@ -198,7 +198,7 @@ const UserForm: Component<Props> = (props) => {
           } else {
             uploadErrors.push('error al subir la firma');
           }
-        } catch (signatureErr) {
+        } catch (_signatureErr) {
           uploadErrors.push('error al subir la firma');
         }
       }
@@ -210,7 +210,10 @@ const UserForm: Component<Props> = (props) => {
         const uploads = [];
         if (photo) uploads.push('Foto');
         if (signature) uploads.push('Firma');
-        const uploadText = uploads.length > 0 ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.` : '';
+        const uploadText =
+          uploads.length > 0
+            ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.`
+            : '';
         setSuccess(`${result.message}${uploadText}`);
       }
 
@@ -528,8 +531,20 @@ const UserForm: Component<Props> = (props) => {
             <Show when={!signaturePreview() && !getSignatureUrl(props.user)}>
               <div class="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
                 <div class="text-gray-400 mb-3">
-                  <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  <svg
+                    class="w-12 h-12 mx-auto"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-label="Icono de cámara"
+                  >
+                    <title>Icono de firma</title>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
                   </svg>
                 </div>
                 <p class="text-sm text-gray-600 mb-2">No hay firma capturada</p>

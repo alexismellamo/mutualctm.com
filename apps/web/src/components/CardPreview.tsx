@@ -1,17 +1,17 @@
-import { type Component, Show, createSignal, onMount, createResource } from 'solid-js';
-import { Portal } from 'solid-js/web';
 import QRCode from 'qrcode';
+import { type Component, createResource, createSignal, onMount, Show } from 'solid-js';
+import { Portal } from 'solid-js/web';
 import ctmLogo from '../assets/ctm-logo.png';
 import presidenteSignature from '../assets/presidente-signature.svg';
 import type { User } from '../pages/DashboardPage';
 import {
-  formatUserName,
   calculateAge,
   formatPhone,
-  getVigencyDate,
+  formatUserName,
   getPhotoUrl,
   getSignatureUrl,
-  handleCardPrint
+  getVigencyDate,
+  handleCardPrint,
 } from '../utils/cardUtils';
 
 type Settings = {
@@ -55,8 +55,8 @@ const CardPreview: Component<Props> = (props) => {
         margin: 1,
         color: {
           dark: '#000000',
-          light: '#FFFFFF'
-        }
+          light: '#FFFFFF',
+        },
       });
     } catch (err) {
       console.error('Error generating QR code:', err);
@@ -64,11 +64,7 @@ const CardPreview: Component<Props> = (props) => {
     }
   };
 
-  const [qrCodeData] = createResource(
-    () => props.user?.id,
-    generateQRCode
-  );
-
+  const [qrCodeData] = createResource(() => props.user?.id, generateQRCode);
 
   const handlePrint = async () => {
     setIsPrinting(true);
@@ -97,311 +93,340 @@ const CardPreview: Component<Props> = (props) => {
       </div>
 
       <div>
-      <div>
-        <Show
-          when={props.user}
-          fallback={
-            <div class="py-8 flex items-center justify-center text-center text-gray-500">
-              <div>
-                <svg
-                  class="w-16 h-16 mx-auto mb-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  role="img"
-                  aria-label="Icono de vista previa"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-4 0V4a2 2 0 014 0v2"
-                  />
-                </svg>
-                <h3 class="text-lg font-medium mb-2">Vista Previa de Credencial</h3>
-                <p class="text-sm">
-                  Selecciona o crea un usuario para ver la vista previa de su credencial
-                </p>
-              </div>
-            </div>
-          }
-        >
-          <div class="print-content space-y-6 flex flex-col items-center print:space-y-0">
-            {/* Front Card */}
-            <div class="text-center print-front-card">
-              <h3 class="text-sm font-medium text-gray-700 mb-2 print:hidden">FRENTE</h3>
-              <div
-                class="screen-card bg-white border border-gray-400 overflow-hidden shadow-lg relative rounded-lg print:shadow-none print:border-0 print:rounded-none"
-                style={{
-                  width: '320px',
-                  height: '200px',
-                }}
-              >
-                {/* Header with Logos and Title */}
-                <div class="flex items-center justify-between p-1 gap-12">
-                  {/* Top Left Logo */}
-                  <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
-                  </div>
-
-                  {/* Center Title */}
-                  <div class="flex-1 text-center px-1">
-                    <div class="font-bold text-gray-900" style="font-size: 7px; letter-spacing: 0.2px;">
-                      UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
-                    </div>
-                  </div>
-
-                  {/* Top Right Logo */}
-                  <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
-                  </div>
-                </div>
-
-                {/* Main Content */}
-                <div class="flex-1 px-4 flex flex-col justify-center text-left">
-
-                  {/* Red and Green Line */}
-                  <div class="flex mb-2">
-                    <div class="flex-1 h-0.5 bg-red-600" />
-                    <div class="flex-1 h-0.5 bg-green-600" />
-                  </div>
-
-                  {/* Photo and All Content Section */}
-                  <div class="flex gap-3 flex-1">
-                    {/* Photo Section with Numbers */}
-                    <div class="flex flex-col w-16 flex-shrink-0">
-                      {/* Photo */}
-                      <div class="h-20 border border-gray-600 overflow-hidden bg-gray-50 rounded-md">
-                    <Show
-                      when={props.user && getPhotoUrl(props.user)}
-                      fallback={
-                        <div class="w-full h-full flex items-center justify-center">
-                              <div class="text-center text-gray-400">
-                                <svg class="w-6 h-6 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
-                                  <title>Foto del usuario</title>
-                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                            </svg>
-                                <span style="font-size: 5px;">FOTO</span>
-                          </div>
-                        </div>
-                      }
-                    >
-                      <img
-                        src={props.user ? getPhotoUrl(props.user) || '' : ''}
-                        alt="Foto del usuario"
-                          class="w-full h-full object-cover print-photo rounded-md"
-                      />
-                    </Show>
-                  </div>
-
-                      {/* Credential Numbers */}
-                      <div class="mt-1 text-left" style="font-size: 7px;">
-                        <div class="text-gray-800">
-                          <span class="font-bold">No. Licencia:</span>
-                        </div>
-                        <div class="text-gray-900 font-mono">
-                          {props.user?.licenciaNum || '000000'}
-                        </div>
-                        <div class="text-gray-800 mt-1">
-                          <span class="font-bold">No. GAF:</span>
-                        </div>
-                        <div class="text-gray-900 font-mono">
-                          {props.user?.gafeteNum || '000000'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* All Right Content */}
-                    <div class="flex-1 flex flex-col justify-between">
-                      {/* Top Section */}
-                      <div class="space-y-1">
-                        {/* Subtitle */}
-                        <div>
-                          <div class="font-bold text-gray-800 text-center" style="font-size: 8px;">
-                            FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
-                    </div>
-                  </div>
-
-                        {/* Validity */}
-                        <div>
-                          <div class="font-medium text-gray-700" style="font-size: 7px;">
-                            Valida en caso de accidente vial
-                    </div>
-                  </div>
-
-                        {/* User Info */}
-                        <div class="mt-1" style="font-size: 9px;">
-                          <div class="text-gray-800">
-                            <div class="font-bold">La presente acredita al C.:</div>
-                            <div class="text-gray-900 capitalize">{formatUserName(props.user || undefined)?.toLowerCase()}</div>
-                    </div>
-                          
-                          <div class="font-bold text-gray-800 mt-1">
-                            Con Domicilio en:
-                    </div>
-                          <div class="text-gray-900 leading-tight">
-                            <div>{props.user?.address?.street} {props.user?.address?.exteriorNo}, {props.user?.address?.neighborhood}</div>
-                            <div>{props.user?.address?.municipality}, {props.user?.address?.state}, CP {props.user?.address?.postalCode}</div>
-                  </div>
-
-                          <div class="text-gray-800 mt-2">
-                            <span class="text-gray-900">{props.user ? calculateAge(props.user.dob) : ''} años - {props.user ? formatPhone(props.user.phoneMx) : ''}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    </div>
-                  </div>
-
-
-                {/* Bottom Section - Absolute positioned */}
-                <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
-                  {/* Vigency */}
-                  <div style="font-size: 7px;">
-                    <span class="font-bold text-gray-800">
-                      Vigente hasta: 
-                      </span>{props.user ? getVigencyDate(props.user) : ''}
-                    
-                  </div>
-
-                  {/* Presidente Signature */}
-                  <div class="text-center">
-                    <div class="flex items-center justify-center">
-                      <img
-                        src={presidenteSignature}
-                        alt="Firma Presidente"
-                        class="h-6 object-contain"
-                      />
-                    </div>
-                    <div class="font-bold text-gray-700 border-t border-gray-400" style="font-size: 7px;">
-                      PRESIDENTE
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Back Card */}
-            <div class="text-center print-back-card">
-              <h3 class="text-sm font-medium text-gray-700 mb-2 print:hidden">REVERSO</h3>
-              <div
-                class="screen-card bg-white border border-gray-400 overflow-hidden shadow-lg flex flex-col h-full p-2 rounded-lg print:shadow-none print:border-0 print:rounded-none"
-                style={{
-                  width: '320px',
-                  height: '200px',
-                }}
-              >
-                {/* Header with two logos */}
-                <div class="flex justify-between items-start mb-2">
-                  {/* Top Left Logo */}
-                  <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain grayscale print-grayscale" />
-                  </div>
-
-                  {/* Top Right Logo */}
-                  <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain grayscale print-grayscale" />
-                  </div>
-                </div>
-
-                {/* Numbers section - taking most space */}
-                <div class="flex-1 flex items-center justify-center mb-4">
-                  <div class="grid grid-cols-3 gap-6 text-center w-full">
-                    <div>
-                      <div class="font-bold text-gray-700" style="font-size: 7px;">
-                        AJUSTADOR
-                      </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
-                        COLIMA
-                      </div>
-                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
-                        {settings()?.ajustadorColima
-                          ? formatPhone(settings()!.ajustadorColima)
-                          : ''}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="font-bold text-gray-700" style="font-size: 7px;">
-                        AJUSTADOR
-                      </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
-                        TECOMÁN
-                      </div>
-                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
-                        {settings()?.ajustadorTecoman
-                          ? formatPhone(settings()!.ajustadorTecoman)
-                          : ''}
-                      </div>
-                    </div>
-                    <div>
-                      <div class="font-bold text-gray-700" style="font-size: 7px;">
-                        AJUSTADOR
-                      </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
-                        MANZANILLO
-                    </div>
-                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
-                        {settings()?.ajustadorManzanillo
-                          ? formatPhone(settings()!.ajustadorManzanillo)
-                          : ''}
-                    </div>
-                    </div>
-                    </div>
-                  </div>
-
-                {/* Bottom section with legal text and signature */}
+        <div>
+          <Show
+            when={props.user}
+            fallback={
+              <div class="py-8 flex items-center justify-center text-center text-gray-500">
                 <div>
-                  {/* Legal Text - AT TOP */}
-                  <div class="text-center mb-1">
-                    <div class="text-gray-700 leading-tight" style="font-size: 7px;">
-                      <div class="font-bold mb-1">
-                        VALIDA ÚNICAMENTE EN CARROS ASEGURADOS POR EL FONDO DE RESPONSABILIDAD CIVIL
-                        DEL PASAJERO Y COBERTURA AMPLIA C.T.M.
+                  <svg
+                    class="w-16 h-16 mx-auto mb-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    role="img"
+                    aria-label="Icono de vista previa"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V4a2 2 0 114 0v2m-4 0a2 2 0 104 0m-4 0V4a2 2 0 014 0v2"
+                    />
+                  </svg>
+                  <h3 class="text-lg font-medium mb-2">Vista Previa de Credencial</h3>
+                  <p class="text-sm">
+                    Selecciona o crea un usuario para ver la vista previa de su credencial
+                  </p>
+                </div>
+              </div>
+            }
+          >
+            <div class="print-content space-y-6 flex flex-col items-center print:space-y-0">
+              {/* Front Card */}
+              <div class="text-center print-front-card">
+                <h3 class="text-sm font-medium text-gray-700 mb-2 print:hidden">FRENTE</h3>
+                <div
+                  class="screen-card bg-white border border-gray-400 overflow-hidden shadow-lg relative rounded-lg print:shadow-none print:border-0 print:rounded-none"
+                  style={{
+                    width: '320px',
+                    height: '200px',
+                  }}
+                >
+                  {/* Header with Logos and Title */}
+                  <div class="flex items-center justify-between p-1 gap-12">
+                    {/* Top Left Logo */}
+                    <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
+                      <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
+                    </div>
+
+                    {/* Center Title */}
+                    <div class="flex-1 text-center px-1">
+                      <div
+                        class="font-bold text-gray-900"
+                        style="font-size: 7px; letter-spacing: 0.2px;"
+                      >
+                        UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
+                      </div>
+                    </div>
+
+                    {/* Top Right Logo */}
+                    <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
+                      <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
+                    </div>
+                  </div>
+
+                  {/* Main Content */}
+                  <div class="flex-1 px-4 flex flex-col justify-center text-left">
+                    {/* Red and Green Line */}
+                    <div class="flex mb-2">
+                      <div class="flex-1 h-0.5 bg-red-600" />
+                      <div class="flex-1 h-0.5 bg-green-600" />
+                    </div>
+
+                    {/* Photo and All Content Section */}
+                    <div class="flex gap-3 flex-1">
+                      {/* Photo Section with Numbers */}
+                      <div class="flex flex-col w-16 flex-shrink-0">
+                        {/* Photo */}
+                        <div class="h-20 border border-gray-600 overflow-hidden bg-gray-50 rounded-md">
+                          <Show
+                            when={props.user && getPhotoUrl(props.user)}
+                            fallback={
+                              <div class="w-full h-full flex items-center justify-center">
+                                <div class="text-center text-gray-400">
+                                  <svg
+                                    class="w-6 h-6 mx-auto mb-1"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <title>Foto del usuario</title>
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                                  </svg>
+                                  <span style="font-size: 5px;">FOTO</span>
+                                </div>
+                              </div>
+                            }
+                          >
+                            <img
+                              src={props.user ? getPhotoUrl(props.user) || '' : ''}
+                              alt="Foto del usuario"
+                              class="w-full h-full object-cover print-photo rounded-md"
+                            />
+                          </Show>
+                        </div>
+
+                        {/* Credential Numbers */}
+                        <div class="mt-1 text-left" style="font-size: 7px;">
+                          <div class="text-gray-800">
+                            <span class="font-bold">No. Licencia:</span>
+                          </div>
+                          <div class="text-gray-900 font-mono">
+                            {props.user?.licenciaNum || '000000'}
+                          </div>
+                          <div class="text-gray-800 mt-1">
+                            <span class="font-bold">No. GAF:</span>
+                          </div>
+                          <div class="text-gray-900 font-mono">
+                            {props.user?.gafeteNum || '000000'}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* All Right Content */}
+                      <div class="flex-1 flex flex-col justify-between">
+                        {/* Top Section */}
+                        <div class="space-y-1">
+                          {/* Subtitle */}
+                          <div>
+                            <div
+                              class="font-bold text-gray-800 text-center"
+                              style="font-size: 8px;"
+                            >
+                              FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
+                            </div>
+                          </div>
+
+                          {/* Validity */}
+                          <div>
+                            <div class="font-medium text-gray-700" style="font-size: 7px;">
+                              Valida en caso de accidente vial
+                            </div>
+                          </div>
+
+                          {/* User Info */}
+                          <div class="mt-1" style="font-size: 9px;">
+                            <div class="text-gray-800">
+                              <div class="font-bold">La presente acredita al C.:</div>
+                              <div class="text-gray-900 capitalize">
+                                {formatUserName(props.user || undefined)?.toLowerCase()}
+                              </div>
+                            </div>
+
+                            <div class="font-bold text-gray-800 mt-1">Con Domicilio en:</div>
+                            <div class="text-gray-900 leading-tight">
+                              <div>
+                                {props.user?.address?.street} {props.user?.address?.exteriorNo},{' '}
+                                {props.user?.address?.neighborhood}
+                              </div>
+                              <div>
+                                {props.user?.address?.municipality}, {props.user?.address?.state},
+                                CP {props.user?.address?.postalCode}
+                              </div>
+                            </div>
+
+                            <div class="text-gray-800 mt-2">
+                              <span class="text-gray-900">
+                                {props.user ? calculateAge(props.user.dob) : ''} años -{' '}
+                                {props.user ? formatPhone(props.user.phoneMx) : ''}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Section - Absolute positioned */}
+                  <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                    {/* Vigency */}
+                    <div style="font-size: 7px;">
+                      <span class="font-bold text-gray-800">Vigente hasta:</span>
+                      {props.user ? getVigencyDate(props.user) : ''}
+                    </div>
+
+                    {/* Presidente Signature */}
+                    <div class="text-center">
+                      <div class="flex items-center justify-center">
+                        <img
+                          src={presidenteSignature}
+                          alt="Firma Presidente"
+                          class="h-6 object-contain"
+                        />
+                      </div>
+                      <div
+                        class="font-bold text-gray-700 border-t border-gray-400"
+                        style="font-size: 7px;"
+                      >
+                        PRESIDENTE
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Back Card */}
+              <div class="text-center print-back-card">
+                <h3 class="text-sm font-medium text-gray-700 mb-2 print:hidden">REVERSO</h3>
+                <div
+                  class="screen-card bg-white border border-gray-400 overflow-hidden shadow-lg flex flex-col h-full p-2 rounded-lg print:shadow-none print:border-0 print:rounded-none"
+                  style={{
+                    width: '320px',
+                    height: '200px',
+                  }}
+                >
+                  {/* Header with two logos */}
+                  <div class="flex justify-between items-start mb-2">
+                    {/* Top Left Logo */}
+                    <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                      <img
+                        src={ctmLogo}
+                        alt="CTM Logo"
+                        class="h-5 w-5 object-contain grayscale print-grayscale"
+                      />
+                    </div>
+
+                    {/* Top Right Logo */}
+                    <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                      <img
+                        src={ctmLogo}
+                        alt="CTM Logo"
+                        class="h-5 w-5 object-contain grayscale print-grayscale"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Numbers section - taking most space */}
+                  <div class="flex-1 flex items-center justify-center mb-4">
+                    <div class="grid grid-cols-3 gap-6 text-center w-full">
+                      <div>
+                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                          AJUSTADOR
+                        </div>
+                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                          COLIMA
+                        </div>
+                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                          {settings()?.ajustadorColima
+                            ? formatPhone(settings()?.ajustadorColima)
+                            : ''}
+                        </div>
                       </div>
                       <div>
-                        EN CASO DE ACCIDENTE LLAMAR A LOS TELEFONOS ARRIBA MENCIONADOS Y NO MOVERSE
-                        DEL LUGAR DEL ACCIDENTE.
+                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                          AJUSTADOR
+                        </div>
+                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                          TECOMÁN
+                        </div>
+                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                          {settings()?.ajustadorTecoman
+                            ? formatPhone(settings()?.ajustadorTecoman)
+                            : ''}
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                          AJUSTADOR
+                        </div>
+                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                          MANZANILLO
+                        </div>
+                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                          {settings()?.ajustadorManzanillo
+                            ? formatPhone(settings()?.ajustadorManzanillo)
+                            : ''}
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* QR Code and Driver Signature - AT VERY BOTTOM */}
-                  <div class="flex justify-between items-end">
-                    {/* QR Code - LEFT SIDE */}
-                    <div class="flex flex-col items-center">
-                      <Show when={props.user && qrCodeData()}>
-                        <div class="flex items-end justify-center">
-                          <img
-                            src={qrCodeData() || ''}
-                            alt="QR Code"
-                            class="object-contain"
-                            style="height: 45px; width: 45px;"
-                          />
+                  {/* Bottom section with legal text and signature */}
+                  <div>
+                    {/* Legal Text - AT TOP */}
+                    <div class="text-center mb-1">
+                      <div class="text-gray-700 leading-tight" style="font-size: 7px;">
+                        <div class="font-bold mb-1">
+                          VALIDA ÚNICAMENTE EN CARROS ASEGURADOS POR EL FONDO DE RESPONSABILIDAD
+                          CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M.
                         </div>
-                      </Show>
+                        <div>
+                          EN CASO DE ACCIDENTE LLAMAR A LOS TELEFONOS ARRIBA MENCIONADOS Y NO
+                          MOVERSE DEL LUGAR DEL ACCIDENTE.
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Driver Signature - RIGHT SIDE */}
-                    <div class="flex flex-col items-center">
-                      <Show 
-                        when={props.user && getSignatureUrl(props.user)}
-                        fallback={
-                          <div class="h-8 flex items-end justify-center">
-                            <div class="text-gray-400" style="font-size: 6px;">Sin firma</div>
+                    {/* QR Code and Driver Signature - AT VERY BOTTOM */}
+                    <div class="flex justify-between items-end">
+                      {/* QR Code - LEFT SIDE */}
+                      <div class="flex flex-col items-center">
+                        <Show when={props.user && qrCodeData()}>
+                          <div class="flex items-end justify-center">
+                            <img
+                              src={qrCodeData() || ''}
+                              alt="QR Code"
+                              class="object-contain"
+                              style="height: 45px; width: 45px;"
+                            />
                           </div>
-                        }
-                      >
-                        <div class="h-8 flex items-end justify-center">
-                          <img
-                            src={props.user ? getSignatureUrl(props.user) || '' : ''}
-                            alt="Firma del Chofer"
-                            class="max-h-8 w-auto object-contain print-signature"
-                          />
-                        </div>
-                      </Show>
-                      <div class="border-t border-gray-400 pt-1 w-20">
-                        <div class="text-gray-700 font-medium" style="font-size: 6px;">
-                          Firma del Chofer
+                        </Show>
+                      </div>
+
+                      {/* Driver Signature - RIGHT SIDE */}
+                      <div class="flex flex-col items-center">
+                        <Show
+                          when={props.user && getSignatureUrl(props.user)}
+                          fallback={
+                            <div class="h-8 flex items-end justify-center">
+                              <div class="text-gray-400" style="font-size: 6px;">
+                                Sin firma
+                              </div>
+                            </div>
+                          }
+                        >
+                          <div class="h-8 flex items-end justify-center">
+                            <img
+                              src={props.user ? getSignatureUrl(props.user) || '' : ''}
+                              alt="Firma del Chofer"
+                              class="max-h-8 w-auto object-contain print-signature"
+                            />
+                          </div>
+                        </Show>
+                        <div class="border-t border-gray-400 pt-1 w-20">
+                          <div class="text-gray-700 font-medium" style="font-size: 6px;">
+                            Firma del Chofer
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -409,8 +434,7 @@ const CardPreview: Component<Props> = (props) => {
                 </div>
               </div>
             </div>
-          </div>
-        </Show>
+          </Show>
         </div>
       </div>
 
@@ -429,7 +453,10 @@ const CardPreview: Component<Props> = (props) => {
       {/* Loading Overlay - Portal to body for true full-screen coverage */}
       <Show when={isPrinting()}>
         <Portal>
-          <div class="fixed inset-0 bg-white flex items-center justify-center" style="z-index: 9999;">
+          <div
+            class="fixed inset-0 bg-white flex items-center justify-center"
+            style="z-index: 9999;"
+          >
             <div class="bg-white rounded-lg p-8 flex flex-col items-center shadow-2xl">
               <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-ctm-red mb-4"></div>
               <div class="text-lg font-medium text-gray-900 mb-2">Preparando impresión...</div>

@@ -4,7 +4,7 @@ import type { User } from '../pages/DashboardPage';
 /**
  * Formats user name with proper capitalization
  */
-export const formatUserName = (user?: User | null): string => {
+export const formatUserName = (user: User | null | undefined): string => {
   if (!user) return '';
   const parts = [user.firstName, user.lastName.toUpperCase()];
   if (user.secondLastName) {
@@ -38,7 +38,8 @@ export const calculateAge = (dob: string): number => {
 /**
  * Formats phone number with dashes (XXX-XXX-XXXX)
  */
-export const formatPhone = (phone: string): string => {
+export const formatPhone = (phone: string | undefined): string => {
+  if (!phone) return '';
   return phone.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
 };
 
@@ -70,26 +71,26 @@ export const getSignatureUrl = (user: User | null): string | null => {
  * Creates a canvas element that properly crops an image with object-fit: cover behavior
  */
 const createObjectCoverCanvas = (
-  img: HTMLImageElement, 
-  containerWidth: number, 
+  img: HTMLImageElement,
+  containerWidth: number,
   containerHeight: number
 ): HTMLCanvasElement => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  
+
   if (!ctx) throw new Error('Could not get canvas context');
-  
+
   canvas.width = containerWidth;
   canvas.height = containerHeight;
   canvas.className = img.className;
   canvas.style.cssText = img.style.cssText;
-  
+
   // Calculate crop dimensions for object-fit: cover behavior
   const imgAspect = img.naturalWidth / img.naturalHeight;
   const containerAspect = containerWidth / containerHeight;
-  
+
   let drawWidth: number, drawHeight: number, offsetX: number, offsetY: number;
-  
+
   if (imgAspect > containerAspect) {
     // Image is wider, crop sides
     drawHeight = containerHeight;
@@ -103,10 +104,10 @@ const createObjectCoverCanvas = (
     offsetX = 0;
     offsetY = (containerHeight - drawHeight) / 2;
   }
-  
+
   // Draw the properly cropped image
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-  
+
   return canvas;
 };
 
@@ -116,18 +117,18 @@ const createObjectCoverCanvas = (
 const convertCanvasToGrayscale = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return canvas;
-  
+
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imageData.data;
-  
+
   for (let i = 0; i < data.length; i += 4) {
     const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
-    data[i] = gray;     // Red
-    data[i + 1] = gray; // Green  
+    data[i] = gray; // Red
+    data[i + 1] = gray; // Green
     data[i + 2] = gray; // Blue
     // Alpha channel (data[i + 3]) stays the same
   }
-  
+
   ctx.putImageData(imageData, 0, 0);
   return canvas;
 };
@@ -140,7 +141,7 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     // Get the front and back card elements
     const frontCard = document.querySelector('.print-front-card') as HTMLElement;
     const backCard = document.querySelector('.print-back-card') as HTMLElement;
-    
+
     if (!frontCard || !backCard) {
       console.error('Could not find card elements');
       return;
@@ -149,17 +150,17 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     // Hide the FRENTE/REVERSO labels before capturing
     const frontLabel = frontCard.querySelector('h3') as HTMLElement;
     const backLabel = backCard.querySelector('h3') as HTMLElement;
-    
+
     if (frontLabel) frontLabel.style.display = 'none';
     if (backLabel) backLabel.style.display = 'none';
 
     // Temporarily remove borders and border radius from screen cards for printing
     const frontScreenCard = frontCard.querySelector('.screen-card') as HTMLElement;
     const backScreenCard = backCard.querySelector('.screen-card') as HTMLElement;
-    
+
     let originalFrontClasses = '';
     let originalBackClasses = '';
-    
+
     if (frontScreenCard) {
       originalFrontClasses = frontScreenCard.className;
       frontScreenCard.className = frontScreenCard.className
@@ -167,7 +168,7 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
         .replace(/\s+/g, ' ')
         .trim();
     }
-    
+
     if (backScreenCard) {
       originalBackClasses = backScreenCard.className;
       backScreenCard.className = backScreenCard.className
@@ -181,7 +182,7 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     const originalTransformBack = backCard.style.transform;
     const originalTransformOrigin = frontCard.style.transformOrigin;
     const originalTransformOriginBack = backCard.style.transformOrigin;
-    
+
     // Scale up 3x for capture
     frontCard.style.transformOrigin = '0 0';
     frontCard.style.transform = 'scale(3)';
@@ -189,58 +190,64 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     backCard.style.transform = 'scale(3)';
 
     // Wait a moment for the transform to take effect
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Fix object-cover issue by temporarily replacing img with canvas
     const userPhoto = frontCard.querySelector('.print-photo') as HTMLImageElement;
     let originalPhotoParent: HTMLElement | null = null;
     let photoCanvas: HTMLCanvasElement | null = null;
-    
-    if (userPhoto && userPhoto.complete && userPhoto.naturalWidth > 0) {
+
+    if (userPhoto?.complete && userPhoto.naturalWidth > 0) {
       originalPhotoParent = userPhoto.parentElement;
-      
+
       if (originalPhotoParent) {
         // Get the container dimensions (photo box size) - scaled up
         const containerWidth = 64 * 3;
         const containerHeight = 80 * 3;
-        
+
         // Create canvas with proper object-fit: cover behavior
         photoCanvas = createObjectCoverCanvas(userPhoto, containerWidth, containerHeight);
-        
+
         // Replace the img with our canvas
         originalPhotoParent.replaceChild(photoCanvas, userPhoto);
       }
     }
 
     // Convert back card logos to grayscale for printing
-    const backCardLogos = backCard.querySelectorAll('img[alt="CTM Logo"]') as NodeListOf<HTMLImageElement>;
-    const originalLogos: { element: HTMLImageElement; parent: HTMLElement; canvas: HTMLCanvasElement }[] = [];
-    
+    const backCardLogos = backCard.querySelectorAll(
+      'img[alt="CTM Logo"]'
+    ) as NodeListOf<HTMLImageElement>;
+    const originalLogos: {
+      element: HTMLImageElement;
+      parent: HTMLElement;
+      canvas: HTMLCanvasElement;
+    }[] = [];
+
     for (const logo of backCardLogos) {
       if (logo.complete && logo.naturalWidth > 0 && logo.parentElement) {
         // Create a canvas from the logo
         const logoCanvas = document.createElement('canvas');
         const ctx = logoCanvas.getContext('2d');
-        
+
         if (ctx) {
           logoCanvas.width = logo.offsetWidth * 3; // Match the scale factor
           logoCanvas.height = logo.offsetHeight * 3;
           logoCanvas.className = logo.className;
           logoCanvas.style.cssText = logo.style.cssText;
-          
+
           // Draw the logo to canvas
           ctx.drawImage(logo, 0, 0, logoCanvas.width, logoCanvas.height);
-          
+
           // Convert to grayscale
           const grayscaleCanvas = convertCanvasToGrayscale(logoCanvas);
-          
+
           // Store original for restoration
           originalLogos.push({
             element: logo,
             parent: logo.parentElement,
-            canvas: grayscaleCanvas
+            canvas: grayscaleCanvas,
           });
-          
+
           // Replace with grayscale canvas
           logo.parentElement.replaceChild(grayscaleCanvas, logo);
         }
@@ -293,7 +300,7 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     frontCard.style.transformOrigin = originalTransformOrigin;
     backCard.style.transform = originalTransformBack;
     backCard.style.transformOrigin = originalTransformOriginBack;
-    
+
     if (frontLabel) frontLabel.style.display = '';
     if (backLabel) backLabel.style.display = '';
 
@@ -310,8 +317,10 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     if (!printWindow) return;
 
     // Generate custom filename based on user's name
-    const customTitle = user 
-      ? `CTM_Credencial_${formatUserName(user).replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}`
+    const customTitle = user
+      ? `CTM_Credencial_${formatUserName(user)
+          .replace(/\s+/g, '_')
+          .replace(/[^a-zA-Z0-9_]/g, '')}`
       : 'CTM_Credencial';
 
     // Set up the print page with exact CR-80 sizing
@@ -370,14 +379,13 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     `);
 
     printWindow.document.close();
-    
+
     // Wait a bit for images to load, then print
     setTimeout(() => {
       printWindow.focus();
       printWindow.print();
       printWindow.close();
     }, 500);
-
   } catch (error) {
     console.error('Error generating print images:', error);
     // Fallback to regular print

@@ -1,4 +1,4 @@
-import { type Component, For, Show, createSignal, onCleanup, onMount } from 'solid-js';
+import { type Component, createSignal, For, onCleanup, onMount, Show } from 'solid-js';
 
 type Props = {
   onPhotoTaken: (photoBlob: Blob) => void;

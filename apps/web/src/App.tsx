@@ -1,5 +1,5 @@
 import { Route, Router } from '@solidjs/router';
-import { type Component, Show, onMount } from 'solid-js';
+import { type Component, onMount, Show } from 'solid-js';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import SettingsPage from './pages/SettingsPage';
@@ -17,27 +17,30 @@ const App: Component = () => {
       <Router>
         {/* Public validation route - no authentication required */}
         <Route path="/validation/:id" component={ValidationPage} />
-        
+
         {/* Protected routes - require authentication */}
-        <Route path="/*" component={() => (
-          <Show
-            when={authStore.isInitialized()}
-            fallback={
-              <div class="flex items-center justify-center min-h-screen">
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-ctm-red" />
-                <span class="ml-3 text-gray-600">Verificando autenticación...</span>
-              </div>
-            }
-          >
-            <Show when={authStore.admin()} fallback={<LoginPage onLogin={() => {}} />}>
-              <Router>
-                <Route path="/" component={DashboardPage} />
-                <Route path="/settings" component={SettingsPage} />
-                <Route path="/signature-test" component={SignatureTestPage} />
-              </Router>
+        <Route
+          path="/*"
+          component={() => (
+            <Show
+              when={authStore.isInitialized()}
+              fallback={
+                <div class="flex items-center justify-center min-h-screen">
+                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-ctm-red" />
+                  <span class="ml-3 text-gray-600">Verificando autenticación...</span>
+                </div>
+              }
+            >
+              <Show when={authStore.admin()} fallback={<LoginPage onLogin={() => {}} />}>
+                <Router>
+                  <Route path="/" component={DashboardPage} />
+                  <Route path="/settings" component={SettingsPage} />
+                  <Route path="/signature-test" component={SignatureTestPage} />
+                </Router>
+              </Show>
             </Show>
-          </Show>
-        )} />
+          )}
+        />
       </Router>
     </div>
   );

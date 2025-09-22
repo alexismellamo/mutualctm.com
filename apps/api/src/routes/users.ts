@@ -11,7 +11,7 @@ import { withAuth } from '../middleware/withAuth';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
   .guard(withAuth, (app) => app)
-      .post(
+  .post(
     '/',
     async ({ body, set }) => {
       try {
@@ -169,11 +169,9 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
 
     // Convert search to lowercase for case-insensitive matching
     const searchLower = searchQuery.trim().toLowerCase();
-    
-    // Split the search query into individual words  
-    const searchWords = searchLower
-      .split(/\s+/)
-      .filter((word) => word.length > 0);
+
+    // Split the search query into individual words
+    const searchWords = searchLower.split(/\s+/).filter((word) => word.length > 0);
 
     let users: (User & { address: Address | null })[];
 
@@ -187,14 +185,17 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       });
 
       const searchTerm = searchWords[0];
-      users = allUsers.filter(user => 
-        user.firstName.toLowerCase().includes(searchTerm) ||
-        user.lastName.toLowerCase().includes(searchTerm) ||
-        (user.secondLastName && user.secondLastName.toLowerCase().includes(searchTerm)) ||
-        user.phoneMx.includes(searchQuery) ||
-        user.licenciaNum.includes(searchQuery) ||
-        user.gafeteNum.includes(searchQuery)
-      ).slice(0, 20);
+      users = allUsers
+        .filter(
+          (user) =>
+            user.firstName.toLowerCase().includes(searchTerm) ||
+            user.lastName.toLowerCase().includes(searchTerm) ||
+            user.secondLastName?.toLowerCase().includes(searchTerm) ||
+            user.phoneMx.includes(searchQuery) ||
+            user.licenciaNum.includes(searchQuery) ||
+            user.gafeteNum.includes(searchQuery)
+        )
+        .slice(0, 20);
     } else {
       // Multiple words search - each word must match at least one name field (case insensitive)
       const allUsers = await prisma.user.findMany({
@@ -204,13 +205,16 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         orderBy: { createdAt: 'desc' },
       });
 
-      users = allUsers.filter(user => {
-        return searchWords.every(word => 
-          user.firstName.toLowerCase().includes(word) ||
-          user.lastName.toLowerCase().includes(word) ||
-          (user.secondLastName && user.secondLastName.toLowerCase().includes(word))
-        );
-      }).slice(0, 20);
+      users = allUsers
+        .filter((user) => {
+          return searchWords.every(
+            (word) =>
+              user.firstName.toLowerCase().includes(word) ||
+              user.lastName.toLowerCase().includes(word) ||
+              user.secondLastName?.toLowerCase().includes(word)
+          );
+        })
+        .slice(0, 20);
     }
 
     return { users };

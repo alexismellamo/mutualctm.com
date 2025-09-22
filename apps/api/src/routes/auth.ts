@@ -12,7 +12,7 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   .post(
     '/login',
     async ({ body, set, cookie: { session }, request }) => {
-      const clientIP = request.headers.get('x-forwarded-for') || 'unknown';
+      const _clientIP = request.headers.get('x-forwarded-for') || 'unknown';
 
       try {
         const { email, password } = loginSchema.parse(body);
@@ -76,42 +76,50 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   )
   .group('', (app) =>
     app
-      .post('/logout', async ({ cookie: { session } }) => {
-        if (session?.value) {
-          await prisma.session.deleteMany({
+      .post(
+        '/logout',
+        async ({ cookie: { session } }) => {
+          if (session?.value) {
+            await prisma.session.deleteMany({
+              where: { token: session.value },
+            });
+
+            session.remove();
+          }
+
+          return { message: 'Logout exitoso' };
+        },
+        withAuth
+      )
+      .get(
+        '/me',
+        async ({ cookie: { session }, set }) => {
+          const adminSession = await prisma.session.findUnique({
             where: { token: session.value },
+            include: { admin: true },
           });
 
-          session.remove();
-        }
+          if (!adminSession) {
+            set.status = 401;
+            return { error: 'No autorizado' };
+          }
 
-        return { message: 'Logout exitoso' };
-      }, withAuth)
-      .get('/me', async ({ cookie: { session }, set }) => {
-        const adminSession = await prisma.session.findUnique({
-          where: { token: session.value },
-          include: { admin: true },
-        });
+          const admin = await prisma.admin.findUnique({
+            where: { id: adminSession.adminId },
+            select: {
+              id: true,
+              email: true,
+              createdAt: true,
+            },
+          });
 
-        if (!adminSession) {
-          set.status = 401;
-          return { error: 'No autorizado' };
-        }
+          if (!admin) {
+            set.status = 404;
+            return { error: 'Admin no encontrado' };
+          }
 
-        const admin = await prisma.admin.findUnique({
-          where: { id: adminSession.adminId },
-          select: {
-            id: true,
-            email: true,
-            createdAt: true,
-          },
-        });
-
-        if (!admin) {
-          set.status = 404;
-          return { error: 'Admin no encontrado' };
-        }
-
-        return { admin };
-      }, withAuth)
+          return { admin };
+        },
+        withAuth
+      )
   );

@@ -1,5 +1,5 @@
 import { A, useSearchParams } from '@solidjs/router';
-import { type Component, Show, createSignal, onMount } from 'solid-js';
+import { type Component, createSignal, onMount, Show } from 'solid-js';
 import ctmLogo from '../assets/ctm-logo.png';
 import CardPreview from '../components/CardPreview';
 import SearchPanel from '../components/SearchPanel';
@@ -148,10 +148,12 @@ const DashboardPage: Component = () => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Search Panel - Top (Horizontal) */}
         <div class="w-full">
-          <SearchPanel 
-            onUserSelect={handleUserSelect} 
+          <SearchPanel
+            onUserSelect={handleUserSelect}
             onCreateNew={handleCreateNew}
-            initialQuery={Array.isArray(searchParams.query) ? searchParams.query[0] : searchParams.query}
+            initialQuery={
+              Array.isArray(searchParams.query) ? searchParams.query[0] : searchParams.query
+            }
           />
         </div>
 

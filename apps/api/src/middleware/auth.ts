@@ -1,8 +1,8 @@
 import { prisma } from '@ctm/db';
 import { Elysia } from 'elysia';
 
-export const authMiddleware = new Elysia({ name: 'auth' })
-  .onBeforeHandle(async ({ cookie: { session } }) => {
+export const authMiddleware = new Elysia({ name: 'auth' }).onBeforeHandle(
+  async ({ cookie: { session } }) => {
     if (!session?.value) {
       return new Response(JSON.stringify({ error: 'No autorizado' }), {
         status: 401,
@@ -28,4 +28,5 @@ export const authMiddleware = new Elysia({ name: 'auth' })
     }
 
     return undefined;
-  });
+  }
+);

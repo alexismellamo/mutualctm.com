@@ -1,4 +1,4 @@
-import { type Component, Show, createSignal } from 'solid-js';
+import { type Component, createSignal, Show } from 'solid-js';
 import { authStore } from '../stores/auth';
 
 type Props = {
@@ -90,8 +90,6 @@ const LoginPage: Component<Props> = (props) => {
               </Show>
             </button>
           </form>
-
-          
         </div>
       </div>
     </div>

@@ -1,13 +1,14 @@
-import { type Component, For, Show, createEffect, createSignal } from 'solid-js';
+import { type Component, createEffect, createSignal, For, Show } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
 
 type Props = {
   onUserSelect: (user: User) => void;
   onCreateNew: () => void;
+  initialQuery?: string;
 };
 
 const SearchPanel: Component<Props> = (props) => {
-  const [searchQuery, setSearchQuery] = createSignal('');
+  const [searchQuery, setSearchQuery] = createSignal(props.initialQuery || '');
   const [users, setUsers] = createSignal<User[]>([]);
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal('');

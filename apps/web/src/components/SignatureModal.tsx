@@ -1,4 +1,4 @@
-import { type Component, Show, createEffect, createSignal, onCleanup } from 'solid-js';
+import { type Component, createEffect, createSignal, onCleanup, Show } from 'solid-js';
 
 type Props = {
   isOpen: boolean;
@@ -17,7 +17,11 @@ declare global {
   function SetJustifyMode(mode: number): void;
   function ClearTablet(): void;
   function SigWebSetDisplayTarget(context: CanvasRenderingContext2D | null): void;
-  function SetTabletState(state: number, context?: CanvasRenderingContext2D, interval?: number): number;
+  function SetTabletState(
+    state: number,
+    context?: CanvasRenderingContext2D,
+    interval?: number
+  ): number;
   function GetTabletState(): number;
   function NumberOfTabletPoints(): string;
   function GetSigImageB64(callback: (base64: string) => void): void;
@@ -29,7 +33,7 @@ const SignatureModal: Component<Props> = (props) => {
   const [error, setError] = createSignal('');
   const [points, setPoints] = createSignal(0);
   const [sigWebInstalled, setSigWebInstalled] = createSignal(false);
-  
+
   let canvas: HTMLCanvasElement | undefined;
   let canvasContext: CanvasRenderingContext2D | null = null;
   let refreshTimer: number | null = null;
@@ -52,7 +56,8 @@ const SignatureModal: Component<Props> = (props) => {
 
   const checkSigWebInstallation = () => {
     try {
-      const installed = typeof window.IsSigWebInstalled === 'function' && window.IsSigWebInstalled();
+      const installed =
+        typeof window.IsSigWebInstalled === 'function' && window.IsSigWebInstalled();
       setSigWebInstalled(installed);
       if (installed) {
         setError('');
@@ -61,11 +66,15 @@ const SignatureModal: Component<Props> = (props) => {
           startCapture();
         }, 100);
       } else {
-        setError('SigWeb no está instalado. Por favor instale el servicio SigWeb y reinicie el navegador.');
+        setError(
+          'SigWeb no está instalado. Por favor instale el servicio SigWeb y reinicie el navegador.'
+        );
       }
-    } catch (e) {
+    } catch (_e) {
       setSigWebInstalled(false);
-      setError('Error al detectar SigWeb. Asegúrese de que el servicio esté instalado y ejecutándose.');
+      setError(
+        'Error al detectar SigWeb. Asegúrese de que el servicio esté instalado y ejecutándose.'
+      );
     }
   };
 
@@ -120,12 +129,14 @@ const SignatureModal: Component<Props> = (props) => {
       // Clear canvas
       canvasContext.clearRect(0, 0, canvas.width, canvas.height);
       refreshTimer = window.SetTabletState(1, canvasContext, 100);
-      
+
       setIsCapturing(true);
       setError('');
       startPointTicker();
     } catch (e) {
-      setError('Error al iniciar la captura de firma. Verifique que SigWeb esté funcionando correctamente.');
+      setError(
+        'Error al iniciar la captura de firma. Verifique que SigWeb esté funcionando correctamente.'
+      );
       console.error('Start capture error:', e);
     }
   };
@@ -147,12 +158,12 @@ const SignatureModal: Component<Props> = (props) => {
 
   const clearSignature = () => {
     if (!sigWebInstalled() || !canvas || !canvasContext) return;
-    
+
     try {
       window.ClearTablet();
       canvasContext.clearRect(0, 0, canvas.width, canvas.height);
       setPoints(0);
-    } catch (e) {
+    } catch (_e) {
       setError('Error al limpiar la firma');
     }
   };
@@ -171,7 +182,7 @@ const SignatureModal: Component<Props> = (props) => {
         // Draw image to canvas with transparent background
         canvas.width = img.width;
         canvas.height = img.height;
-        
+
         // Make sure background is transparent
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
@@ -181,11 +192,14 @@ const SignatureModal: Component<Props> = (props) => {
         const data = imageData.data;
 
         // Find bounds of signature content (dark pixels)
-        let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+        let minX = canvas.width,
+          minY = canvas.height,
+          maxX = 0,
+          maxY = 0;
         let hasContent = false;
 
         console.log('Starting trim analysis...');
-        
+
         for (let y = 0; y < canvas.height; y++) {
           for (let x = 0; x < canvas.width; x++) {
             const index = (y * canvas.width + x) * 4;
@@ -193,16 +207,18 @@ const SignatureModal: Component<Props> = (props) => {
             const g = data[index + 1];
             const b = data[index + 2];
             const alpha = data[index + 3];
-            
+
             // More aggressive detection: anything that's significantly darker than white
             const brightness = (r + g + b) / 3;
             const isDark = brightness < 200; // Much more aggressive than 240
             const hasAlpha = alpha > 10; // Lower alpha threshold
-            
+
             // Consider it content if it's dark OR has alpha (covers both white bg and transparent)
             if ((isDark && hasAlpha) || (alpha > 0 && brightness < 250)) {
               if (!hasContent) {
-                console.log(`First content pixel found at (${x}, ${y}): r=${r}, g=${g}, b=${b}, a=${alpha}, brightness=${brightness}`);
+                console.log(
+                  `First content pixel found at (${x}, ${y}): r=${r}, g=${g}, b=${b}, a=${alpha}, brightness=${brightness}`
+                );
               }
               hasContent = true;
               minX = Math.min(minX, x);
@@ -212,7 +228,7 @@ const SignatureModal: Component<Props> = (props) => {
             }
           }
         }
-        
+
         console.log(`Content bounds: ${minX}, ${minY} to ${maxX}, ${maxY}`);
         console.log(`Original size: ${canvas.width}x${canvas.height}`);
 
@@ -233,7 +249,7 @@ const SignatureModal: Component<Props> = (props) => {
         const trimmedHeight = maxY - minY + 1;
         const trimmedCanvas = document.createElement('canvas');
         const trimmedCtx = trimmedCanvas.getContext('2d');
-        
+
         if (!trimmedCtx) {
           reject(new Error('No se pudo crear el canvas recortado'));
           return;
@@ -241,28 +257,40 @@ const SignatureModal: Component<Props> = (props) => {
 
         trimmedCanvas.width = trimmedWidth;
         trimmedCanvas.height = trimmedHeight;
-        
+
         // Ensure transparent background
         trimmedCtx.clearRect(0, 0, trimmedWidth, trimmedHeight);
 
         // Copy trimmed portion
         trimmedCtx.drawImage(
           canvas,
-          minX, minY, trimmedWidth, trimmedHeight,
-          0, 0, trimmedWidth, trimmedHeight
+          minX,
+          minY,
+          trimmedWidth,
+          trimmedHeight,
+          0,
+          0,
+          trimmedWidth,
+          trimmedHeight
         );
 
         // Convert to blob with PNG to preserve transparency
-        trimmedCanvas.toBlob((blob) => {
-          if (blob) {
-            console.log(`Signature trimmed from ${canvas.width}x${canvas.height} to ${trimmedWidth}x${trimmedHeight}`);
-            resolve(blob);
-          } else {
-            reject(new Error('Error al crear el blob de la firma'));
-          }
-        }, 'image/png', 1.0);
+        trimmedCanvas.toBlob(
+          (blob) => {
+            if (blob) {
+              console.log(
+                `Signature trimmed from ${canvas.width}x${canvas.height} to ${trimmedWidth}x${trimmedHeight}`
+              );
+              resolve(blob);
+            } else {
+              reject(new Error('Error al crear el blob de la firma'));
+            }
+          },
+          'image/png',
+          1.0
+        );
       };
-      
+
       img.onerror = () => reject(new Error('Error al cargar la imagen'));
       img.src = `data:image/png;base64,${base64}`;
     });
@@ -270,7 +298,7 @@ const SignatureModal: Component<Props> = (props) => {
 
   const saveSignature = () => {
     if (!sigWebInstalled()) return;
-    
+
     const currentPoints = points();
     if (!currentPoints || currentPoints === 0) {
       setError('No hay firma para guardar. Por favor firme en la tableta.');
@@ -287,7 +315,7 @@ const SignatureModal: Component<Props> = (props) => {
         try {
           console.log('Raw base64 length:', base64png.length);
           console.log('Starting trimming process...');
-          
+
           // Trim the signature to remove empty space
           const trimmedBlob = await trimSignatureImage(base64png);
           console.log('Trimming completed successfully');
@@ -295,8 +323,10 @@ const SignatureModal: Component<Props> = (props) => {
           handleClose();
         } catch (e) {
           console.error('Trim error details:', e);
-          setError(`Error al procesar la imagen de la firma: ${e.message}`);
-          
+          setError(
+            `Error al procesar la imagen de la firma: ${e instanceof Error ? e.message : 'Error desconocido'}`
+          );
+
           // Fallback: save without trimming
           console.log('Saving without trimming as fallback...');
           const byteCharacters = atob(base64png);
@@ -310,7 +340,7 @@ const SignatureModal: Component<Props> = (props) => {
           handleClose();
         }
       });
-    } catch (e) {
+    } catch (_e) {
       setError('Error al guardar la firma');
     }
   };
@@ -328,6 +358,7 @@ const SignatureModal: Component<Props> = (props) => {
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-xl font-semibold text-ctm-text">Captura de Firma</h2>
               <button
+                type="button"
                 onClick={handleClose}
                 class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
               >
@@ -344,8 +375,20 @@ const SignatureModal: Component<Props> = (props) => {
             <Show when={!sigWebInstalled()}>
               <div class="text-center py-8">
                 <div class="text-gray-500 mb-4">
-                  <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  <svg
+                    class="w-16 h-16 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-label="Icono de firma digital"
+                  >
+                    <title>Icono de firma digital</title>
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 16.5c-.77.833.192 2.5 1.732 2.5z"
+                    />
                   </svg>
                   <h3 class="text-lg font-medium text-gray-900 mb-2">SigWeb No Detectado</h3>
                   <p class="text-gray-600 mb-4">
@@ -366,6 +409,7 @@ const SignatureModal: Component<Props> = (props) => {
                 <div class="flex justify-between items-center">
                   <div class="flex gap-2">
                     <button
+                      type="button"
                       onClick={clearSignature}
                       disabled={!isCapturing()}
                       class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -373,6 +417,7 @@ const SignatureModal: Component<Props> = (props) => {
                       Limpiar
                     </button>
                     <button
+                      type="button"
                       onClick={saveSignature}
                       disabled={!isCapturing() || points() === 0}
                       class="px-4 py-2 text-sm bg-ctm-red text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -394,10 +439,9 @@ const SignatureModal: Component<Props> = (props) => {
                     style="max-width: 100%; height: auto;"
                   />
                   <p class="text-sm text-gray-600 text-center mt-2">
-                    {isCapturing() 
+                    {isCapturing()
                       ? 'Firme en la tableta Topaz. La firma aparecerá aquí en tiempo real.'
-                      : 'Conecte su tableta Topaz y la captura iniciará automáticamente.'
-                    }
+                      : 'Conecte su tableta Topaz y la captura iniciará automáticamente.'}
                   </p>
                 </div>
               </div>
@@ -405,6 +449,7 @@ const SignatureModal: Component<Props> = (props) => {
 
             <div class="flex justify-end gap-3 mt-6">
               <button
+                type="button"
                 onClick={handleClose}
                 class="px-4 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50"
               >

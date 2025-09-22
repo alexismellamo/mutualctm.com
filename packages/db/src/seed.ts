@@ -1,6 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { hash } from 'argon2';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 import { prisma } from './index.js';
 
 async function main() {
@@ -11,7 +11,9 @@ async function main() {
   if (existingUsers > 0) {
     console.log('❌ Database already has users. Aborting seed to prevent duplicates.');
     console.log(`Found ${existingUsers} existing users.`);
-    throw new Error('Database already seeded. Please clear the database before running seed again.');
+    throw new Error(
+      'Database already seeded. Please clear the database before running seed again.'
+    );
   }
 
   // Create admin user with new credentials
@@ -31,11 +33,11 @@ async function main() {
   console.log(`✅ Admin created: ${admin.email}`);
 
   // Create settings
-  const settings = await prisma.settings.upsert({
+  const _settings = await prisma.settings.upsert({
     where: { id: 1 },
     update: {
       ajustadorColima: '3121020805',
-      ajustadorTecoman: '3131202631', 
+      ajustadorTecoman: '3131202631',
       ajustadorManzanillo: '3141351075',
     },
     create: {
@@ -50,7 +52,7 @@ async function main() {
   // Read and parse CSV file
   const csvPath = join(process.cwd(), '../../olddb.csv');
   console.log(`📄 Reading CSV from: ${csvPath}`);
-  
+
   let csvContent: string;
   try {
     csvContent = readFileSync(csvPath, 'utf-8');
@@ -59,7 +61,7 @@ async function main() {
     throw new Error('CSV file not found. Make sure olddb.csv is in the project root.');
   }
 
-  const lines = csvContent.split('\n').filter(line => line.trim());
+  const lines = csvContent.split('\n').filter((line) => line.trim());
   const header = lines[0];
   console.log(`📊 CSV Header: ${header}`);
   console.log(`📈 Total lines to process: ${lines.length - 1}`);
@@ -75,7 +77,20 @@ async function main() {
     try {
       const fields = parseCSVLine(line);
 
-      const [folio, nombre, telefono, calle, colonia, cp, municipio, estado, edad, licencia, vigencia, gafete] = fields;
+      const [
+        _folio,
+        nombre,
+        telefono,
+        calle,
+        colonia,
+        cp,
+        municipio,
+        estado,
+        edad,
+        licencia,
+        vigencia,
+        gafete,
+      ] = fields;
 
       // Skip only if no name at all
       if (!nombre || nombre.trim() === '' || nombre === 'NO_NAME') {
@@ -84,7 +99,7 @@ async function main() {
       }
 
       // Parse name into components
-      const nameParts = nombre.split(' ').filter(part => part.trim());
+      const nameParts = nombre.split(' ').filter((part) => part.trim());
       const firstName = nameParts[0];
       const lastName = nameParts[1];
       const secondLastName = nameParts.length > 2 ? nameParts.slice(2).join(' ') : undefined;
@@ -121,7 +136,7 @@ async function main() {
         };
       }
 
-      const user = await prisma.user.create({
+      const _user = await prisma.user.create({
         data: {
           ...userData,
           ...(addressData && {
@@ -139,10 +154,11 @@ async function main() {
       if (successCount % 100 === 0) {
         console.log(`✅ Processed ${successCount} users...`);
       }
-
     } catch (error) {
       errorCount++;
-      console.log(`❌ Error processing line ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.log(
+        `❌ Error processing line ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -157,10 +173,10 @@ function parseCSVLine(line: string): string[] {
   const fields: string[] = [];
   let current = '';
   let inQuotes = false;
-  
+
   for (let i = 0; i < line.length; i++) {
     const char = line[i];
-    
+
     if (char === '"') {
       inQuotes = !inQuotes;
     } else if (char === ',' && !inQuotes) {
@@ -170,14 +186,14 @@ function parseCSVLine(line: string): string[] {
       current += char;
     }
   }
-  
+
   fields.push(current.trim());
   return fields;
 }
 
 // Helper function to calculate DOB from age
 function calculateDOBFromAge(edadStr: string): Date {
-  const edad = parseInt(edadStr) || 30; // Default age if invalid
+  const edad = parseInt(edadStr, 10) || 30; // Default age if invalid
   const currentYear = new Date().getFullYear();
   const birthYear = currentYear - edad;
   return new Date(birthYear, 0, 1); // January 1st of birth year
@@ -186,33 +202,33 @@ function calculateDOBFromAge(edadStr: string): Date {
 // Helper function to parse vigencia date
 function parseVigenciaDate(vigenciaStr: string): Date | null {
   if (!vigenciaStr) return null;
-  
+
   // Handle different date formats from CSV
   // Examples: "21/08/2018", "25/05/26", "09/05/2025"
   const cleanVigencia = vigenciaStr.replace(/\s+/g, '');
-  
+
   // Try different date formats
   const formats = [
     /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // dd/mm/yyyy
-    /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/,  // dd/mm/yy
+    /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/, // dd/mm/yy
   ];
-  
+
   for (const format of formats) {
     const match = cleanVigencia.match(format);
     if (match) {
-      const day = parseInt(match[1]);
-      const month = parseInt(match[2]) - 1; // Month is 0-indexed
-      let year = parseInt(match[3]);
-      
+      const day = parseInt(match[1], 10);
+      const month = parseInt(match[2], 10) - 1; // Month is 0-indexed
+      let year = parseInt(match[3], 10);
+
       // Handle 2-digit years
       if (year < 100) {
         year += year < 50 ? 2000 : 1900;
       }
-      
+
       return new Date(year, month, day);
     }
   }
-  
+
   console.log(`⚠️  Could not parse vigencia date: ${vigenciaStr}`);
   return null;
 }

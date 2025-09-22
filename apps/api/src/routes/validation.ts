@@ -1,8 +1,9 @@
 import { prisma } from '@ctm/db';
 import { Elysia } from 'elysia';
 
-export const validationRoutes = new Elysia({ prefix: '/users' })
-  .get('/:id/validate', async ({ params: { id }, set }) => {
+export const validationRoutes = new Elysia({ prefix: '/users' }).get(
+  '/:id/validate',
+  async ({ params: { id }, set }) => {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -20,4 +21,5 @@ export const validationRoutes = new Elysia({ prefix: '/users' })
     }
 
     return { user };
-  });
+  }
+);

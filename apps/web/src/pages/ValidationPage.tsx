@@ -1,5 +1,5 @@
-import { createSignal, onMount, Show } from 'solid-js';
 import { useParams } from '@solidjs/router';
+import { createSignal, onMount, Show } from 'solid-js';
 
 type User = {
   id: string;
@@ -20,7 +20,8 @@ export default function ValidationPage() {
   const [validationResult, setValidationResult] = createSignal<ValidationResult | null>(null);
   const [loading, setLoading] = createSignal(true);
 
-  const formatUserName = (user: User) => {
+  const formatUserName = (user: User | undefined) => {
+    if (!user) return '';
     return `${user.firstName} ${user.lastName} ${user.secondLastName || ''}`.trim();
   };
 
@@ -37,36 +38,36 @@ export default function ValidationPage() {
     return date.toLocaleDateString('es-MX', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
   onMount(async () => {
     try {
       const response = await fetch(`/api/v1/users/${params.id}/validate`);
-      
+
       if (response.ok) {
         const data = await response.json();
         const isValid = isVigenciaValid(data.user?.vigencia);
         setValidationResult({
           isValid,
-          user: data.user
+          user: data.user,
         });
       } else if (response.status === 404) {
         setValidationResult({
           isValid: false,
-          error: 'Usuario no encontrado'
+          error: 'Usuario no encontrado',
         });
       } else {
         setValidationResult({
           isValid: false,
-          error: 'Error al validar usuario'
+          error: 'Error al validar usuario',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       setValidationResult({
         isValid: false,
-        error: 'Error de conexión'
+        error: 'Error de conexión',
       });
     } finally {
       setLoading(false);
@@ -86,13 +87,13 @@ export default function ValidationPage() {
         <Show when={!loading() && validationResult()}>
           <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             {/* Header with validation status */}
-            <div class={`p-6 text-center ${
-              validationResult()?.isValid ? 'bg-green-500' : 'bg-red-500'
-            }`}>
+            <div
+              class={`p-6 text-center ${
+                validationResult()?.isValid ? 'bg-green-500' : 'bg-red-500'
+              }`}
+            >
               <div class="text-white">
-                <div class="text-6xl mb-2">
-                  {validationResult()?.isValid ? '✓' : '✗'}
-                </div>
+                <div class="text-6xl mb-2">{validationResult()?.isValid ? '✓' : '✗'}</div>
                 <h1 class="text-xl font-bold">
                   {validationResult()?.isValid ? 'CREDENCIAL VÁLIDA' : 'CREDENCIAL INVÁLIDA'}
                 </h1>
@@ -104,40 +105,34 @@ export default function ValidationPage() {
               <Show when={validationResult()?.user}>
                 <div class="space-y-4">
                   <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
-                      Nombre Completo
-                    </label>
+                    <div class="block text-sm font-medium text-gray-500 mb-1">Nombre Completo</div>
                     <p class="text-lg font-semibold text-gray-900">
-                      {formatUserName(validationResult()!.user!)}
+                      {formatUserName(validationResult()?.user)}
                     </p>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-500 mb-1">
-                      Vigencia
-                    </label>
-                    <p class={`text-lg font-semibold ${
-                      isVigenciaValid(validationResult()?.user?.vigencia) 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
-                    }`}>
+                    <div class="block text-sm font-medium text-gray-500 mb-1">Vigencia</div>
+                    <p
+                      class={`text-lg font-semibold ${
+                        isVigenciaValid(validationResult()?.user?.vigencia)
+                          ? 'text-green-600'
+                          : 'text-red-600'
+                      }`}
+                    >
                       {formatDate(validationResult()?.user?.vigencia)}
                     </p>
                   </div>
 
                   <Show when={!isVigenciaValid(validationResult()?.user?.vigencia)}>
                     <div class="bg-red-50 border border-red-200 rounded-md p-3">
-                      <p class="text-red-800 text-sm">
-                        ⚠️ Esta credencial ha expirado
-                      </p>
+                      <p class="text-red-800 text-sm">⚠️ Esta credencial ha expirado</p>
                     </div>
                   </Show>
 
                   <Show when={isVigenciaValid(validationResult()?.user?.vigencia)}>
                     <div class="bg-green-50 border border-green-200 rounded-md p-3">
-                      <p class="text-green-800 text-sm">
-                        ✅ Credencial vigente y válida
-                      </p>
+                      <p class="text-green-800 text-sm">✅ Credencial vigente y válida</p>
                     </div>
                   </Show>
                 </div>
@@ -157,12 +152,8 @@ export default function ValidationPage() {
 
             {/* CTM Logo/Branding */}
             <div class="bg-gray-50 p-4 text-center border-t">
-              <p class="text-sm text-gray-600">
-                Sistema de Validación CTM
-              </p>
-              <p class="text-xs text-gray-500 mt-1">
-                Colegio de Técnicos en Mantenimiento
-              </p>
+              <p class="text-sm text-gray-600">Sistema de Validación CTM</p>
+              <p class="text-xs text-gray-500 mt-1">Colegio de Técnicos en Mantenimiento</p>
             </div>
           </div>
         </Show>

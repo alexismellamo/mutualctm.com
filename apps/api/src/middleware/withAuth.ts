@@ -11,5 +11,3 @@ export const withAuth = {
     if (!ok) return status(401);
   },
 };
-
-
