@@ -15,6 +15,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
+      - ./olddb.csv:/app/olddb.csv
     networks:
       - ctm-network
     healthcheck:
