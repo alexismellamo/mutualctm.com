@@ -1,18 +1,4 @@
 services:
-  db-setup:
-    build:
-      context: .
-      target: api
-    container_name: ctm-db-setup
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=file:/app/data/dev.db
-    volumes:
-      - ./data:/app/data
-    command: >
-      sh -c "bun --cwd /app/packages/db run migrate:prod"
-    restart: "no"
-
   api:
     build:
       context: .
@@ -27,15 +13,6 @@ services:
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
-    depends_on:
-      db-setup:
-        condition: service_completed_successfully
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
   web:
     build:
@@ -44,7 +21,6 @@ services:
     container_name: ctm-web
     restart: unless-stopped
     depends_on:
-      api:
-        condition: service_healthy
+      - api
 
 
