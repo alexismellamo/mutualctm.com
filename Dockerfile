@@ -20,7 +20,7 @@ ENV NODE_ENV=development
 ENV API_PORT=3001
 ENV DATABASE_URL=file:/app/data/dev.db
 EXPOSE 3001
-CMD ["bun","run","start"]
+CMD sh -c "bun run build && bun run start"
 
 FROM oven/bun:1.2.21-alpine AS web-build
 WORKDIR /app
