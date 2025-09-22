@@ -2,9 +2,12 @@ import { prisma } from '@ctm/db';
 import { Elysia } from 'elysia';
 
 export const authMiddleware = new Elysia({ name: 'auth' })
-  .derive(async ({ cookie: { session } }) => {
+  .onBeforeHandle(async ({ cookie: { session } }) => {
     if (!session?.value) {
-      throw new Error('No autorizado');
+      return new Response(JSON.stringify({ error: 'No autorizado' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      });
     }
 
     const sessionRecord = await prisma.session.findUnique({
@@ -18,21 +21,11 @@ export const authMiddleware = new Elysia({ name: 'auth' })
           where: { id: sessionRecord.id },
         });
       }
-      throw new Error('Sesión expirada');
+      return new Response(JSON.stringify({ error: 'Sesión expirada' }), {
+        status: 401,
+        headers: { 'content-type': 'application/json' },
+      });
     }
 
-    return {
-      adminId: sessionRecord.adminId,
-    };
-  })
-  .onError(({ error, set }) => {
-    const errorMessage = error instanceof Error ? error.message : 'Error de autenticación';
-
-    if (errorMessage === 'No autorizado' || errorMessage === 'Sesión expirada') {
-      set.status = 401;
-      return { error: errorMessage };
-    }
-
-    // Re-throw other errors
-    throw error;
+    return undefined;
   });

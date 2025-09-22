@@ -163,7 +163,7 @@ const SearchPanel: Component<Props> = (props) => {
                   >
                     <div class="font-medium text-ctm-text text-sm">{formatUserName(user)}</div>
                     <div class="text-xs text-gray-600 mt-1 space-y-1">
-                      <div>Cred: {user.credencialNum}</div>
+                      <div>Lic: {user.licenciaNum}</div>
                       <div>Tel: {user.phoneMx}</div>
                       <div class={getVigencyStatus(user).color}>{getVigencyStatus(user).text}</div>
                     </div>

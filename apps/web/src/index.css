@@ -28,6 +28,63 @@
   .card {
     @apply bg-white rounded-lg shadow-md p-6;
   }
+
+  .print-grayscale {
+    filter: grayscale(100%) !important;
+    -webkit-filter: grayscale(100%) !important;
+  }
+
+  .signature-capture {
+    @apply p-6 bg-white rounded-lg shadow-md;
+  }
+
+  .signature-capture .status {
+    @apply p-3 rounded-lg mb-4;
+  }
+
+  .signature-capture .status.error {
+    @apply bg-red-50 text-red-700 border border-red-200;
+  }
+
+  .signature-capture .status.success {
+    @apply bg-green-50 text-green-700 border border-green-200;
+  }
+
+  .signature-capture .controls {
+    @apply flex flex-wrap gap-2 mb-4;
+  }
+
+  .signature-capture .btn {
+    @apply px-4 py-2 rounded-lg font-semibold transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .signature-capture .btn-primary {
+    @apply bg-ctm-red hover:bg-red-700 text-white;
+  }
+
+  .signature-capture .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-ctm-text;
+  }
+
+  .signature-capture .btn-warning {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white;
+  }
+
+  .signature-capture .btn-success {
+    @apply bg-green-500 hover:bg-green-600 text-white;
+  }
+
+  .signature-canvas {
+    @apply border border-gray-300 rounded-lg mb-4;
+  }
+
+  .signature-preview {
+    @apply mt-4 p-4 bg-gray-50 rounded-lg;
+  }
+
+  .signature-image {
+    @apply max-w-full h-auto border border-gray-300 rounded;
+  }
 }
 
 @media print {
@@ -47,5 +104,11 @@
 
   .screen-card {
     height: 100vh;
+  }
+
+  /* Force grayscale for back card logos in print */
+  .print-back-card img {
+    filter: grayscale(100%) !important;
+    -webkit-filter: grayscale(100%) !important;
   }
 }

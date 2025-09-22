@@ -1,7 +1,8 @@
-import { type Component, Show, createSignal, onMount } from 'solid-js';
+import { type Component, Show, createSignal, onMount, createResource } from 'solid-js';
 import { Portal } from 'solid-js/web';
+import QRCode from 'qrcode';
 import ctmLogo from '../assets/ctm-logo.png';
-import presidenteSignature from '../assets/presidente-signature.jpeg';
+import presidenteSignature from '../assets/presidente-signature.svg';
 import type { User } from '../pages/DashboardPage';
 import {
   formatUserName,
@@ -9,6 +10,7 @@ import {
   formatPhone,
   getVigencyDate,
   getPhotoUrl,
+  getSignatureUrl,
   handleCardPrint
 } from '../utils/cardUtils';
 
@@ -43,6 +45,29 @@ const CardPreview: Component<Props> = (props) => {
       console.error('Error loading settings:', err);
     }
   });
+
+  // Generate QR code for validation URL
+  const generateQRCode = async (userId: string) => {
+    try {
+      const validationUrl = `${window.location.origin}/validation/${userId}`;
+      return await QRCode.toDataURL(validationUrl, {
+        width: 80,
+        margin: 1,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+    } catch (err) {
+      console.error('Error generating QR code:', err);
+      return null;
+    }
+  };
+
+  const [qrCodeData] = createResource(
+    () => props.user?.id,
+    generateQRCode
+  );
 
 
   const handlePrint = async () => {
@@ -121,7 +146,7 @@ const CardPreview: Component<Props> = (props) => {
 
                   {/* Center Title */}
                   <div class="flex-1 text-center px-1">
-                    <div class="font-bold text-gray-900" style="font-size: 6px; letter-spacing: 0.2px;">
+                    <div class="font-bold text-gray-900" style="font-size: 7px; letter-spacing: 0.2px;">
                       UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
                     </div>
                   </div>
@@ -170,12 +195,12 @@ const CardPreview: Component<Props> = (props) => {
                   </div>
 
                       {/* Credential Numbers */}
-                      <div class="mt-1 text-left" style="font-size: 6px;">
+                      <div class="mt-1 text-left" style="font-size: 7px;">
                         <div class="text-gray-800">
-                          <span class="font-bold">No. CRED:</span>
+                          <span class="font-bold">No. Licencia:</span>
                         </div>
                         <div class="text-gray-900 font-mono">
-                          {props.user?.credencialNum || '000000'}
+                          {props.user?.licenciaNum || '000000'}
                         </div>
                         <div class="text-gray-800 mt-1">
                           <span class="font-bold">No. GAF:</span>
@@ -192,20 +217,20 @@ const CardPreview: Component<Props> = (props) => {
                       <div class="space-y-1">
                         {/* Subtitle */}
                         <div>
-                          <div class="font-bold text-gray-800 text-center" style="font-size: 7px;">
+                          <div class="font-bold text-gray-800 text-center" style="font-size: 8px;">
                             FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
                     </div>
                   </div>
 
                         {/* Validity */}
                         <div>
-                          <div class="font-medium text-gray-700" style="font-size: 6px;">
+                          <div class="font-medium text-gray-700" style="font-size: 7px;">
                             Valida en caso de accidente vial
                     </div>
                   </div>
 
                         {/* User Info */}
-                        <div class="mt-1" style="font-size: 8px;">
+                        <div class="mt-1" style="font-size: 9px;">
                           <div class="text-gray-800">
                             <div class="font-bold">La presente acredita al C.:</div>
                             <div class="text-gray-900 capitalize">{formatUserName(props.user || undefined)?.toLowerCase()}</div>
@@ -232,7 +257,7 @@ const CardPreview: Component<Props> = (props) => {
                 {/* Bottom Section - Absolute positioned */}
                 <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
                   {/* Vigency */}
-                  <div style="font-size: 6px;">
+                  <div style="font-size: 7px;">
                     <span class="font-bold text-gray-800">
                       Vigente hasta: 
                       </span>{props.user ? getVigencyDate(props.user) : ''}
@@ -248,7 +273,7 @@ const CardPreview: Component<Props> = (props) => {
                         class="h-6 object-contain"
                       />
                     </div>
-                    <div class="font-bold text-gray-700 border-t border-gray-400" style="font-size: 6px;">
+                    <div class="font-bold text-gray-700 border-t border-gray-400" style="font-size: 7px;">
                       PRESIDENTE
                     </div>
                   </div>
@@ -269,53 +294,53 @@ const CardPreview: Component<Props> = (props) => {
                 {/* Header with two logos */}
                 <div class="flex justify-between items-start mb-2">
                   {/* Top Left Logo */}
-                  <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain" />
+                  <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain grayscale print-grayscale" />
                   </div>
 
                   {/* Top Right Logo */}
-                  <div class="w-8 h-8 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border-2 border-yellow-400">
-                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain" />
+                  <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                    <img src={ctmLogo} alt="CTM Logo" class="h-5 w-5 object-contain grayscale print-grayscale" />
                   </div>
                 </div>
 
                 {/* Numbers section - taking most space */}
-                <div class="flex-1 flex items-center justify-center">
+                <div class="flex-1 flex items-center justify-center mb-4">
                   <div class="grid grid-cols-3 gap-6 text-center w-full">
                     <div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700" style="font-size: 7px;">
                         AJUSTADOR
                       </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
                         COLIMA
                       </div>
-                      <div class="font-mono font-bold text-ctm-red" style="font-size: 10px;">
+                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
                         {settings()?.ajustadorColima
                           ? formatPhone(settings()!.ajustadorColima)
                           : ''}
                       </div>
                     </div>
                     <div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700" style="font-size: 7px;">
                         AJUSTADOR
                       </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
                         TECOMÁN
                       </div>
-                      <div class="font-mono font-bold text-ctm-red" style="font-size: 10px;">
+                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
                         {settings()?.ajustadorTecoman
                           ? formatPhone(settings()!.ajustadorTecoman)
                           : ''}
                       </div>
                     </div>
                     <div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700" style="font-size: 7px;">
                         AJUSTADOR
                       </div>
-                      <div class="font-bold text-gray-700 mb-1" style="font-size: 8px;">
+                      <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
                         MANZANILLO
                     </div>
-                      <div class="font-mono font-bold text-ctm-red" style="font-size: 10px;">
+                      <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
                         {settings()?.ajustadorManzanillo
                           ? formatPhone(settings()!.ajustadorManzanillo)
                           : ''}
@@ -325,10 +350,10 @@ const CardPreview: Component<Props> = (props) => {
                   </div>
 
                 {/* Bottom section with legal text and signature */}
-                <div class="space-y-1">
-                  {/* Legal Text */}
-                  <div class="text-center mb-8">
-                    <div class="text-gray-700 leading-tight" style="font-size: 6px;">
+                <div>
+                  {/* Legal Text - AT TOP */}
+                  <div class="text-center mb-1">
+                    <div class="text-gray-700 leading-tight" style="font-size: 7px;">
                       <div class="font-bold mb-1">
                         VALIDA ÚNICAMENTE EN CARROS ASEGURADOS POR EL FONDO DE RESPONSABILIDAD CIVIL
                         DEL PASAJERO Y COBERTURA AMPLIA C.T.M.
@@ -340,12 +365,45 @@ const CardPreview: Component<Props> = (props) => {
                     </div>
                   </div>
 
-                  {/* Driver Signature */}
-                  <div class="text-center">
-                    <div class="border-t border-gray-400 pt-1">
-                      <div class="text-gray-700 font-medium" style="font-size: 7px;">
-                        Firma del Chofer
+                  {/* QR Code and Driver Signature - AT VERY BOTTOM */}
+                  <div class="flex justify-between items-end">
+                    {/* QR Code - LEFT SIDE */}
+                    <div class="flex flex-col items-center">
+                      <Show when={props.user && qrCodeData()}>
+                        <div class="flex items-end justify-center">
+                          <img
+                            src={qrCodeData() || ''}
+                            alt="QR Code"
+                            class="object-contain"
+                            style="height: 45px; width: 45px;"
+                          />
+                        </div>
+                      </Show>
                     </div>
+
+                    {/* Driver Signature - RIGHT SIDE */}
+                    <div class="flex flex-col items-center">
+                      <Show 
+                        when={props.user && getSignatureUrl(props.user)}
+                        fallback={
+                          <div class="h-8 flex items-end justify-center">
+                            <div class="text-gray-400" style="font-size: 6px;">Sin firma</div>
+                          </div>
+                        }
+                      >
+                        <div class="h-8 flex items-end justify-center">
+                          <img
+                            src={props.user ? getSignatureUrl(props.user) || '' : ''}
+                            alt="Firma del Chofer"
+                            class="max-h-8 w-auto object-contain print-signature"
+                          />
+                        </div>
+                      </Show>
+                      <div class="border-t border-gray-400 pt-1 w-20">
+                        <div class="text-gray-700 font-medium" style="font-size: 6px;">
+                          Firma del Chofer
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

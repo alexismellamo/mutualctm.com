@@ -7,11 +7,11 @@ import {
 } from '@ctm/schema';
 import type { Address, User } from '@prisma/client';
 import { Elysia, t } from 'elysia';
-import { authMiddleware } from '../middleware/auth';
+import { withAuth } from '../middleware/withAuth';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
-  .use(authMiddleware)
-  .post(
+  .guard(withAuth, (app) => app)
+      .post(
     '/',
     async ({ body, set }) => {
       try {
@@ -49,7 +49,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         dob: t.String(),
         vigencia: t.Optional(t.String()),
         phoneMx: t.String(),
-        credencialNum: t.String(),
+        licenciaNum: t.String(),
         gafeteNum: t.String(),
         address: t.Object({
           street: t.String(),
@@ -129,7 +129,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
           dob: t.String(),
           vigencia: t.Optional(t.String()),
           phoneMx: t.String(),
-          credencialNum: t.String(),
+          licenciaNum: t.String(),
           gafeteNum: t.String(),
           address: t.Object({
             street: t.String(),
@@ -146,54 +146,71 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       ),
     }
   )
-  .get('/', async ({ query }) => {
+  .get('/', async ({ query, cookie: { session }, set }) => {
+    if (!session?.value) {
+      set.status = 401;
+      return { error: 'No autorizado' };
+    }
+
+    const sessionRecord = await prisma.session.findUnique({
+      where: { token: session.value },
+      include: { admin: true },
+    });
+
+    if (!sessionRecord || sessionRecord.expiresAt < new Date()) {
+      if (sessionRecord) {
+        await prisma.session.delete({ where: { id: sessionRecord.id } });
+      }
+      set.status = 401;
+      return { error: 'Sesión expirada' };
+    }
+
     const { query: searchQuery } = searchUsersSchema.parse(query);
 
-    // Split the search query into individual words
-    const searchWords = searchQuery
-      .trim()
+    // Convert search to lowercase for case-insensitive matching
+    const searchLower = searchQuery.trim().toLowerCase();
+    
+    // Split the search query into individual words  
+    const searchWords = searchLower
       .split(/\s+/)
       .filter((word) => word.length > 0);
 
     let users: (User & { address: Address | null })[];
 
     if (searchWords.length === 1) {
-      // Single word search - original logic
-      users = await prisma.user.findMany({
-        where: {
-          OR: [
-            { firstName: { contains: searchQuery } },
-            { lastName: { contains: searchQuery } },
-            { secondLastName: { contains: searchQuery } },
-            { phoneMx: { contains: searchQuery } },
-            { credencialNum: { contains: searchQuery } },
-            { gafeteNum: { contains: searchQuery } },
-          ],
-        },
+      // Single word search - get all users and filter in memory for case-insensitive search
+      const allUsers = await prisma.user.findMany({
         include: {
           address: true,
         },
         orderBy: { createdAt: 'desc' },
-        take: 20,
       });
+
+      const searchTerm = searchWords[0];
+      users = allUsers.filter(user => 
+        user.firstName.toLowerCase().includes(searchTerm) ||
+        user.lastName.toLowerCase().includes(searchTerm) ||
+        (user.secondLastName && user.secondLastName.toLowerCase().includes(searchTerm)) ||
+        user.phoneMx.includes(searchQuery) ||
+        user.licenciaNum.includes(searchQuery) ||
+        user.gafeteNum.includes(searchQuery)
+      ).slice(0, 20);
     } else {
-      // Multiple words search - each word must match at least one name field
-      users = await prisma.user.findMany({
-        where: {
-          AND: searchWords.map((word) => ({
-            OR: [
-              { firstName: { contains: word } },
-              { lastName: { contains: word } },
-              { secondLastName: { contains: word } },
-            ],
-          })),
-        },
+      // Multiple words search - each word must match at least one name field (case insensitive)
+      const allUsers = await prisma.user.findMany({
         include: {
           address: true,
         },
         orderBy: { createdAt: 'desc' },
-        take: 20,
       });
+
+      users = allUsers.filter(user => {
+        return searchWords.every(word => 
+          user.firstName.toLowerCase().includes(word) ||
+          user.lastName.toLowerCase().includes(word) ||
+          (user.secondLastName && user.secondLastName.toLowerCase().includes(word))
+        );
+      }).slice(0, 20);
     }
 
     return { users };

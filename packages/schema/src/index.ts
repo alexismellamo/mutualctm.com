@@ -20,7 +20,7 @@ export const createUserSchema = z.object({
   dob: z.coerce.date(),
   vigencia: z.coerce.date().optional(),
   phoneMx: z.string().regex(/^\d{10}$/, 'Teléfono debe tener 10 dígitos'),
-  credencialNum: z.string().min(1, 'Número de credencial requerido'),
+  licenciaNum: z.string().min(1, 'Número de licencia requerido'),
   gafeteNum: z.string().min(1, 'Número de gafete requerido'),
   address: z.object({
     street: z.string().min(1, 'Calle requerida'),

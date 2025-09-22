@@ -1,6 +1,8 @@
 import { type Component, Show, createEffect, createSignal } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
 import PhotoManager from './PhotoManager';
+import SignatureModal from './SignatureModal';
+import { getSignatureUrl } from '../utils/cardUtils';
 
 type Props = {
   user: User | null;
@@ -22,7 +24,7 @@ const UserForm: Component<Props> = (props) => {
     dob: '',
     vigencia: getDefaultVigencia(),
     phoneMx: '',
-    credencialNum: '',
+    licenciaNum: '',
     gafeteNum: '',
     address: {
       street: '',
@@ -41,6 +43,9 @@ const UserForm: Component<Props> = (props) => {
   const [error, setError] = createSignal('');
   const [success, setSuccess] = createSignal('');
   const [selectedPhoto, setSelectedPhoto] = createSignal<Blob | null>(null);
+  const [selectedSignature, setSelectedSignature] = createSignal<Blob | null>(null);
+  const [signaturePreview, setSignaturePreview] = createSignal<string>('');
+  const [isSignatureModalOpen, setIsSignatureModalOpen] = createSignal(false);
 
   // Load user data when user changes
   createEffect(() => {
@@ -54,7 +59,7 @@ const UserForm: Component<Props> = (props) => {
         dob: user.dob.split('T')[0], // Convert to YYYY-MM-DD format
         vigencia: user.vigencia ? user.vigencia.split('T')[0] : getDefaultVigencia(),
         phoneMx: user.phoneMx,
-        credencialNum: user.credencialNum,
+        licenciaNum: user.licenciaNum,
         gafeteNum: user.gafeteNum,
         address: {
           street: user.address?.street || '',
@@ -77,7 +82,7 @@ const UserForm: Component<Props> = (props) => {
         dob: '',
         vigencia: getDefaultVigencia(),
         phoneMx: '',
-        credencialNum: '',
+        licenciaNum: '',
         gafeteNum: '',
         address: {
           street: '',
@@ -112,6 +117,13 @@ const UserForm: Component<Props> = (props) => {
     }
   };
 
+  const handleSignatureSaved = (signatureBlob: Blob) => {
+    setSelectedSignature(signatureBlob);
+    // Create preview URL
+    const url = URL.createObjectURL(signatureBlob);
+    setSignaturePreview(url);
+  };
+
   const handleSubmit = async (e: Event) => {
     e.preventDefault();
     setIsLoading(true);
@@ -142,6 +154,9 @@ const UserForm: Component<Props> = (props) => {
 
       // Upload photo if one was selected
       const photo = selectedPhoto();
+      const signature = selectedSignature();
+      let uploadErrors: string[] = [];
+
       if (photo && result.user?.id) {
         try {
           const formData = new FormData();
@@ -157,13 +172,47 @@ const UserForm: Component<Props> = (props) => {
             const photoResult = await photoResponse.json();
             // Update user with photo path
             result.user.photoPath = photoResult.path;
-            setSuccess(`${result.message} Foto guardada exitosamente.`);
           } else {
-            setError('Usuario guardado pero error al subir la foto');
+            uploadErrors.push('error al subir la foto');
           }
         } catch (photoErr) {
-          setError('Usuario guardado pero error al subir la foto');
+          uploadErrors.push('error al subir la foto');
         }
+      }
+
+      // Upload signature if one was selected
+      if (signature && result.user?.id) {
+        try {
+          const formData = new FormData();
+          formData.append('file', signature, `signature-${Date.now()}.png`);
+
+          const signatureResponse = await fetch(`/api/v1/users/${result.user.id}/signature`, {
+            method: 'POST',
+            credentials: 'include',
+            body: formData,
+          });
+
+          if (signatureResponse.ok) {
+            const signatureResult = await signatureResponse.json();
+            // Update user with signature path
+            result.user.signaturePath = signatureResult.path;
+          } else {
+            uploadErrors.push('error al subir la firma');
+          }
+        } catch (signatureErr) {
+          uploadErrors.push('error al subir la firma');
+        }
+      }
+
+      // Set success/error messages
+      if (uploadErrors.length > 0) {
+        setError(`Usuario guardado pero ${uploadErrors.join(' y ')}`);
+      } else {
+        const uploads = [];
+        if (photo) uploads.push('Foto');
+        if (signature) uploads.push('Firma');
+        const uploadText = uploads.length > 0 ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.` : '';
+        setSuccess(`${result.message}${uploadText}`);
       }
 
       props.onUserSaved(result.user);
@@ -275,7 +324,7 @@ const UserForm: Component<Props> = (props) => {
                 />
                 <button
                   type="button"
-                  class="mt-1 px-2 py-1 text-xs text-ctm-primary border border-ctm-primary rounded hover:bg-ctm-primary/10 transition-colors duration-200"
+                  class="mt-1 px-2 py-1 text-xs text-ctm-red border border-ctm-red rounded hover:bg-red-50 transition-colors duration-200"
                   onClick={() => updateFormData('vigencia', getDefaultVigencia())}
                 >
                   + 1 año
@@ -297,16 +346,16 @@ const UserForm: Component<Props> = (props) => {
                 />
               </div>
               <div>
-                <label for="credencialNum" class="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Credencial *
+                <label for="licenciaNum" class="block text-sm font-medium text-gray-700 mb-1">
+                  Número de Licencia *
                 </label>
                 <input
-                  id="credencialNum"
+                  id="licenciaNum"
                   type="text"
                   required
                   class="input-field"
-                  value={formData().credencialNum}
-                  onInput={(e) => updateFormData('credencialNum', e.currentTarget.value)}
+                  value={formData().licenciaNum}
+                  onInput={(e) => updateFormData('licenciaNum', e.currentTarget.value)}
                 />
               </div>
               <div>
@@ -448,6 +497,80 @@ const UserForm: Component<Props> = (props) => {
             </div>
           </div>
         </div>
+
+        {/* Signature Section */}
+        <div>
+          <h3 class="text-md font-medium text-ctm-text mb-4">Firma Digital</h3>
+          <div class="space-y-4">
+            <Show when={signaturePreview()}>
+              <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                  <p class="text-sm text-gray-600">Vista previa de la firma:</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedSignature(null);
+                      setSignaturePreview('');
+                    }}
+                    class="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors duration-200"
+                  >
+                    Eliminar
+                  </button>
+                </div>
+                <img
+                  src={signaturePreview()}
+                  alt="Firma capturada"
+                  class="border border-gray-300 rounded bg-white max-w-full h-auto"
+                  style="max-height: 120px;"
+                />
+              </div>
+            </Show>
+
+            <Show when={!signaturePreview() && !getSignatureUrl(props.user)}>
+              <div class="border border-gray-200 rounded-lg p-6 bg-gray-50 text-center">
+                <div class="text-gray-400 mb-3">
+                  <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                </div>
+                <p class="text-sm text-gray-600 mb-2">No hay firma capturada</p>
+                <p class="text-xs text-gray-500 mb-4">
+                  Haga clic en "Capturar Firma" para usar la tableta Topaz
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsSignatureModalOpen(true)}
+                  class="px-4 py-2 bg-ctm-red text-white rounded-md hover:bg-red-700 transition-colors duration-200"
+                >
+                  Capturar Firma
+                </button>
+              </div>
+            </Show>
+
+            <Show when={!signaturePreview() && getSignatureUrl(props.user)}>
+              <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                <div class="flex justify-between items-center mb-2">
+                  <p class="text-sm text-gray-600">Firma existente:</p>
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setIsSignatureModalOpen(true)}
+                      class="px-3 py-1 text-sm text-ctm-red border border-ctm-red rounded hover:bg-red-50 transition-colors duration-200"
+                    >
+                      Recapturar
+                    </button>
+                  </div>
+                </div>
+                <img
+                  src={getSignatureUrl(props.user) || ''}
+                  alt="Firma existente"
+                  class="border border-gray-300 rounded bg-white max-w-full h-auto"
+                  style="max-height: 120px;"
+                />
+              </div>
+            </Show>
+          </div>
+        </div>
       </form>
 
       {/* Sticky Actions */}
@@ -461,6 +584,13 @@ const UserForm: Component<Props> = (props) => {
           {isLoading() ? 'Guardando...' : props.isNew ? 'Crear Usuario' : 'Actualizar Usuario'}
         </button>
       </div>
+
+      {/* Signature Modal */}
+      <SignatureModal
+        isOpen={isSignatureModalOpen()}
+        onClose={() => setIsSignatureModalOpen(false)}
+        onSignatureSaved={handleSignatureSaved}
+      />
     </div>
   );
 };

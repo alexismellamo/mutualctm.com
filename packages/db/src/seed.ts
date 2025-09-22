@@ -1,14 +1,22 @@
 import { hash } from 'argon2';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { prisma } from './index.js';
 
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Get environment variables
-  const adminEmail = process.env.SEED_ADMIN_EMAIL || 'admin@ctm.local';
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'admin123';
+  // Check if database is already seeded
+  const existingUsers = await prisma.user.count();
+  if (existingUsers > 0) {
+    console.log('❌ Database already has users. Aborting seed to prevent duplicates.');
+    console.log(`Found ${existingUsers} existing users.`);
+    throw new Error('Database already seeded. Please clear the database before running seed again.');
+  }
 
-  // Create admin user
+  // Create admin user with new credentials
+  const adminEmail = 'admin@ctm.local';
+  const adminPassword = 'ctm123';
   const hashedPassword = await hash(adminPassword);
 
   const admin = await prisma.admin.upsert({
@@ -22,11 +30,12 @@ async function main() {
 
   console.log(`✅ Admin created: ${admin.email}`);
 
+  // Create settings
   const settings = await prisma.settings.upsert({
     where: { id: 1 },
     update: {
       ajustadorColima: '3121020805',
-      ajustadorTecoman: '3131202631',
+      ajustadorTecoman: '3131202631', 
       ajustadorManzanillo: '3141351075',
     },
     create: {
@@ -36,235 +45,198 @@ async function main() {
     },
   });
 
-  console.log('✅ Default settings created');
+  console.log(`✅ Settings created/updated`);
 
-  // Create test users named Alexis
-  const testUsers = [
-    {
-      firstName: 'Alexis',
-      lastName: 'Navarro',
-      secondLastName: 'Llamas',
-      dob: '1995-07-22',
-      vigencia: '2025-12-31',
-      phoneMx: '3121234567',
-      credencialNum: 'CTM001',
-      gafeteNum: 'GAF001',
-      address: {
-        street: 'Av. Principal',
-        exteriorNo: '123',
-        neighborhood: 'Centro',
-        city: 'Colima',
-        municipality: 'Colima',
-        state: 'Colima',
-        postalCode: '28000',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'García',
-      secondLastName: 'López',
-      dob: '1988-03-15',
-      vigencia: '2024-06-30',
-      phoneMx: '3129876543',
-      credencialNum: 'CTM002',
-      gafeteNum: 'GAF002',
-      address: {
-        street: 'Calle Revolución',
-        exteriorNo: '456',
-        neighborhood: 'Revolución',
-        city: 'Tecomán',
-        municipality: 'Tecomán',
-        state: 'Colima',
-        postalCode: '28110',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Martínez',
-      secondLastName: 'Hernández',
-      dob: '1992-11-08',
-      vigencia: '2026-01-15',
-      phoneMx: '3145678901',
-      credencialNum: 'CTM003',
-      gafeteNum: 'GAF003',
-      address: {
-        street: 'Blvd. Costero',
-        exteriorNo: '789',
-        neighborhood: 'Salahua',
-        city: 'Manzanillo',
-        municipality: 'Manzanillo',
-        state: 'Colima',
-        postalCode: '28200',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Rodríguez',
-      secondLastName: 'Sánchez',
-      dob: '1985-09-12',
-      vigencia: '2023-12-31', // Expired
-      phoneMx: '3132345678',
-      credencialNum: 'CTM004',
-      gafeteNum: 'GAF004',
-      address: {
-        street: 'Calle Hidalgo',
-        exteriorNo: '321',
-        neighborhood: 'Centro',
-        city: 'Villa de Álvarez',
-        municipality: 'Villa de Álvarez',
-        state: 'Colima',
-        postalCode: '28970',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Fernández',
-      secondLastName: 'Morales',
-      dob: '1990-05-20',
-      vigencia: '2025-08-30',
-      phoneMx: '3156789012',
-      credencialNum: 'CTM005',
-      gafeteNum: 'GAF005',
-      address: {
-        street: 'Av. Universidad',
-        exteriorNo: '567',
-        neighborhood: 'Universitaria',
-        city: 'Colima',
-        municipality: 'Colima',
-        state: 'Colima',
-        postalCode: '28040',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Torres',
-      secondLastName: 'Jiménez',
-      dob: '1987-12-03',
-      vigencia: '2024-12-31',
-      phoneMx: '3167890123',
-      credencialNum: 'CTM006',
-      gafeteNum: 'GAF006',
-      address: {
-        street: 'Calle Morelos',
-        exteriorNo: '890',
-        neighborhood: 'Morelos',
-        city: 'Coquimatlán',
-        municipality: 'Coquimatlán',
-        state: 'Colima',
-        postalCode: '28400',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Vargas',
-      secondLastName: 'Cruz',
-      dob: '1993-02-28',
-      vigencia: '2025-03-15',
-      phoneMx: '3178901234',
-      credencialNum: 'CTM007',
-      gafeteNum: 'GAF007',
-      address: {
-        street: 'Av. Tecnológico',
-        exteriorNo: '234',
-        neighborhood: 'Tecnológico',
-        city: 'Colima',
-        municipality: 'Colima',
-        state: 'Colima',
-        postalCode: '28017',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Mendoza',
-      secondLastName: 'Ramírez',
-      dob: '1991-08-14',
-      vigencia: '2026-05-20',
-      phoneMx: '3189012345',
-      credencialNum: 'CTM008',
-      gafeteNum: 'GAF008',
-      address: {
-        street: 'Calle Juárez',
-        exteriorNo: '678',
-        neighborhood: 'Juárez',
-        city: 'Tecomán',
-        municipality: 'Tecomán',
-        state: 'Colima',
-        postalCode: '28120',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Castillo',
-      secondLastName: 'Flores',
-      dob: '1989-06-07',
-      vigencia: '2024-11-30',
-      phoneMx: '3190123456',
-      credencialNum: 'CTM009',
-      gafeteNum: 'GAF009',
-      address: {
-        street: 'Av. México',
-        exteriorNo: '345',
-        neighborhood: 'México',
-        city: 'Manzanillo',
-        municipality: 'Manzanillo',
-        state: 'Colima',
-        postalCode: '28230',
-      },
-    },
-    {
-      firstName: 'Alexis',
-      lastName: 'Ruiz',
-      secondLastName: 'Guerrero',
-      dob: '1994-01-25',
-      vigencia: null, // No vigencia
-      phoneMx: '3101234567',
-      credencialNum: 'CTM010',
-      gafeteNum: 'GAF010',
-      address: {
-        street: 'Calle Independencia',
-        exteriorNo: '789',
-        neighborhood: 'Independencia',
-        city: 'Armería',
-        municipality: 'Armería',
-        state: 'Colima',
-        postalCode: '28300',
-      },
-    },
-  ];
-
-  console.log('🧪 Creating test users...');
-
-  for (const userData of testUsers) {
-    const user = await prisma.user.create({
-      data: {
-        firstName: userData.firstName,
-        lastName: userData.lastName,
-        secondLastName: userData.secondLastName,
-        dob: new Date(userData.dob),
-        vigencia: userData.vigencia ? new Date(userData.vigencia) : null,
-        phoneMx: userData.phoneMx,
-        credencialNum: userData.credencialNum,
-        gafeteNum: userData.gafeteNum,
-        address: {
-          create: userData.address,
-        },
-      },
-      include: {
-        address: true,
-      },
-    });
-
-    console.log(`✅ Created user: ${user.firstName} ${user.lastName} ${user.secondLastName}`);
+  // Read and parse CSV file
+  const csvPath = join(process.cwd(), '../../olddb.csv');
+  console.log(`📄 Reading CSV from: ${csvPath}`);
+  
+  let csvContent: string;
+  try {
+    csvContent = readFileSync(csvPath, 'utf-8');
+  } catch (error) {
+    console.error('❌ Could not read CSV file:', error);
+    throw new Error('CSV file not found. Make sure olddb.csv is in the project root.');
   }
 
-  console.log('🎉 Seeding completed!');
+  const lines = csvContent.split('\n').filter(line => line.trim());
+  const header = lines[0];
+  console.log(`📊 CSV Header: ${header}`);
+  console.log(`📈 Total lines to process: ${lines.length - 1}`);
+
+  // Parse CSV data (skip header)
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    try {
+      const fields = parseCSVLine(line);
+      if (fields.length < 12) {
+        console.log(`⚠️  Skipping line ${i + 1}: insufficient fields`);
+        continue;
+      }
+
+      const [folio, nombre, telefono, calle, colonia, cp, municipio, estado, edad, licencia, vigencia, gafete] = fields;
+
+      // Skip if essential fields are missing
+      if (!nombre || !telefono || !licencia || !gafete) {
+        console.log(`⚠️  Skipping line ${i + 1}: missing essential data (${nombre || 'NO_NAME'})`);
+        continue;
+      }
+
+      // Parse name into components
+      const nameParts = nombre.split(' ').filter(part => part.trim());
+      if (nameParts.length < 2) {
+        console.log(`⚠️  Skipping line ${i + 1}: invalid name format (${nombre})`);
+        continue;
+      }
+
+      const firstName = nameParts[0];
+      const lastName = nameParts[1];
+      const secondLastName = nameParts.length > 2 ? nameParts.slice(2).join(' ') : undefined;
+
+      // Parse dates
+      const dobDate = calculateDOBFromAge(edad);
+      const vigenciaDate = parseVigenciaDate(vigencia);
+
+      // Validate phone number (should be 10 digits)
+      const cleanPhone = telefono.replace(/\D/g, '');
+      if (cleanPhone.length !== 10) {
+        console.log(`⚠️  Skipping line ${i + 1}: invalid phone number (${telefono})`);
+        continue;
+      }
+
+      // Create user record
+      const userData = {
+        firstName,
+        lastName,
+        secondLastName,
+        dob: dobDate,
+        vigencia: vigenciaDate,
+        phoneMx: cleanPhone,
+        licenciaNum: licencia,
+        gafeteNum: gafete,
+      };
+
+      // Create address if we have enough data
+      let addressData = null;
+      if (calle && colonia) {
+        addressData = {
+          street: calle,
+          neighborhood: colonia,
+          city: municipio || 'COLIMA',
+          municipality: municipio || 'COLIMA',
+          state: estado || 'COLIMA',
+          postalCode: cp || '28000',
+        };
+      }
+
+      const user = await prisma.user.create({
+        data: {
+          ...userData,
+          ...(addressData && {
+            address: {
+              create: addressData,
+            },
+          }),
+        },
+        include: {
+          address: true,
+        },
+      });
+
+      successCount++;
+      if (successCount % 100 === 0) {
+        console.log(`✅ Processed ${successCount} users...`);
+      }
+
+    } catch (error) {
+      errorCount++;
+      console.log(`❌ Error processing line ${i + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  console.log(`\n🎉 Seeding completed!`);
+  console.log(`✅ Successfully created: ${successCount} users`);
+  console.log(`❌ Errors: ${errorCount}`);
+  console.log(`📊 Total processed: ${successCount + errorCount}`);
+}
+
+// Helper function to parse CSV line (handles commas in quoted fields)
+function parseCSVLine(line: string): string[] {
+  const fields: string[] = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      fields.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  fields.push(current.trim());
+  return fields;
+}
+
+// Helper function to calculate DOB from age
+function calculateDOBFromAge(edadStr: string): Date {
+  const edad = parseInt(edadStr) || 30; // Default age if invalid
+  const currentYear = new Date().getFullYear();
+  const birthYear = currentYear - edad;
+  return new Date(birthYear, 0, 1); // January 1st of birth year
+}
+
+// Helper function to parse vigencia date
+function parseVigenciaDate(vigenciaStr: string): Date | null {
+  if (!vigenciaStr) return null;
+  
+  // Handle different date formats from CSV
+  // Examples: "21/08/2018", "25/05/26", "09/05/2025"
+  const cleanVigencia = vigenciaStr.replace(/\s+/g, '');
+  
+  // Try different date formats
+  const formats = [
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/, // dd/mm/yyyy
+    /^(\d{1,2})\/(\d{1,2})\/(\d{2})$/,  // dd/mm/yy
+  ];
+  
+  for (const format of formats) {
+    const match = cleanVigencia.match(format);
+    if (match) {
+      const day = parseInt(match[1]);
+      const month = parseInt(match[2]) - 1; // Month is 0-indexed
+      let year = parseInt(match[3]);
+      
+      // Handle 2-digit years
+      if (year < 100) {
+        year += year < 50 ? 2000 : 1900;
+      }
+      
+      return new Date(year, month, day);
+    }
+  }
+  
+  console.log(`⚠️  Could not parse vigencia date: ${vigenciaStr}`);
+  return null;
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Seeding failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+    process.exit(0);
+  })
+  .catch(async (e) => {
+    console.error('❌ Seeding failed:', e);
+    await prisma.$disconnect();
+    process.exit(1);
   });

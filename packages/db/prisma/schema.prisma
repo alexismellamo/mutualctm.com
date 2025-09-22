@@ -48,7 +48,7 @@ model User {
   secondLastName String?
   dob            DateTime
   phoneMx        String
-  credencialNum  String
+  licenciaNum    String
   gafeteNum      String
   photoPath      String?
   signaturePath  String?

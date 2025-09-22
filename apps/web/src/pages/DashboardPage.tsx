@@ -14,7 +14,7 @@ export type User = {
   dob: string;
   vigencia?: string;
   phoneMx: string;
-  credencialNum: string;
+  licenciaNum: string;
   gafeteNum: string;
   photoPath?: string;
   signaturePath?: string;

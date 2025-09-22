@@ -59,6 +59,14 @@ export const getPhotoUrl = (user: User): string | null => {
 };
 
 /**
+ * Gets signature URL for user with cache busting
+ */
+export const getSignatureUrl = (user: User): string | null => {
+  if (!user.id || !user.signaturePath) return null;
+  return `/storage/${user.signaturePath}?t=${Date.now()}`;
+};
+
+/**
  * Creates a canvas element that properly crops an image with object-fit: cover behavior
  */
 const createObjectCoverCanvas = (
@@ -99,6 +107,28 @@ const createObjectCoverCanvas = (
   // Draw the properly cropped image
   ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
   
+  return canvas;
+};
+
+/**
+ * Converts canvas image data to grayscale
+ */
+const convertCanvasToGrayscale = (canvas: HTMLCanvasElement): HTMLCanvasElement => {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return canvas;
+  
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+  
+  for (let i = 0; i < data.length; i += 4) {
+    const gray = Math.round(0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+    data[i] = gray;     // Red
+    data[i + 1] = gray; // Green  
+    data[i + 2] = gray; // Blue
+    // Alpha channel (data[i + 3]) stays the same
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
   return canvas;
 };
 
@@ -182,6 +212,41 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
       }
     }
 
+    // Convert back card logos to grayscale for printing
+    const backCardLogos = backCard.querySelectorAll('img[alt="CTM Logo"]') as NodeListOf<HTMLImageElement>;
+    const originalLogos: { element: HTMLImageElement; parent: HTMLElement; canvas: HTMLCanvasElement }[] = [];
+    
+    for (const logo of backCardLogos) {
+      if (logo.complete && logo.naturalWidth > 0 && logo.parentElement) {
+        // Create a canvas from the logo
+        const logoCanvas = document.createElement('canvas');
+        const ctx = logoCanvas.getContext('2d');
+        
+        if (ctx) {
+          logoCanvas.width = logo.offsetWidth * 3; // Match the scale factor
+          logoCanvas.height = logo.offsetHeight * 3;
+          logoCanvas.className = logo.className;
+          logoCanvas.style.cssText = logo.style.cssText;
+          
+          // Draw the logo to canvas
+          ctx.drawImage(logo, 0, 0, logoCanvas.width, logoCanvas.height);
+          
+          // Convert to grayscale
+          const grayscaleCanvas = convertCanvasToGrayscale(logoCanvas);
+          
+          // Store original for restoration
+          originalLogos.push({
+            element: logo,
+            parent: logo.parentElement,
+            canvas: grayscaleCanvas
+          });
+          
+          // Replace with grayscale canvas
+          logo.parentElement.replaceChild(grayscaleCanvas, logo);
+        }
+      }
+    }
+
     // Calculate CR-80 aspect ratio dimensions for capture
     // CR-80: 85.6mm × 53.98mm = 1.586:1 aspect ratio
     const cr80AspectRatio = 85.6 / 53.98;
@@ -216,6 +281,11 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
     // Restore original photo if we replaced it with canvas
     if (photoCanvas && originalPhotoParent && userPhoto) {
       originalPhotoParent.replaceChild(userPhoto, photoCanvas);
+    }
+
+    // Restore original logos
+    for (const logoData of originalLogos) {
+      logoData.parent.replaceChild(logoData.element, logoData.canvas);
     }
 
     // Restore original transforms and labels
@@ -282,6 +352,10 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
               object-fit: cover;
               object-position: center;
             }
+            
+            .card-image.back {
+              transform: rotate(180deg);
+            }
           </style>
         </head>
         <body>
@@ -289,7 +363,7 @@ export const handleCardPrint = async (user?: User): Promise<void> => {
             <img src="${frontCanvas.toDataURL('image/png', 1.0)}" alt="Front Card" class="card-image" />
           </div>
           <div class="page">
-            <img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="Back Card" class="card-image" />
+            <img src="${backCanvas.toDataURL('image/png', 1.0)}" alt="Back Card" class="card-image back" />
           </div>
         </body>
       </html>

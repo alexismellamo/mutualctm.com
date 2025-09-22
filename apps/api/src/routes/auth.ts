@@ -2,7 +2,7 @@ import { prisma } from '@ctm/db';
 import { loginSchema } from '@ctm/schema';
 import { verify } from 'argon2';
 import { Elysia, t } from 'elysia';
-import { authMiddleware } from '../middleware/auth';
+import { withAuth } from '../middleware/withAuth';
 
 function generateSessionToken(): string {
   return crypto.randomUUID() + crypto.randomUUID().replace(/-/g, '');
@@ -76,7 +76,6 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
   )
   .group('', (app) =>
     app
-      .use(authMiddleware)
       .post('/logout', async ({ cookie: { session } }) => {
         if (session?.value) {
           await prisma.session.deleteMany({
@@ -87,31 +86,20 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         }
 
         return { message: 'Logout exitoso' };
-      })
+      }, withAuth)
       .get('/me', async ({ cookie: { session }, set }) => {
-        // Manual auth check (working implementation)
-        if (!session?.value) {
-          set.status = 401;
-          return { error: 'No autorizado' };
-        }
-
-        const sessionRecord = await prisma.session.findUnique({
+        const adminSession = await prisma.session.findUnique({
           where: { token: session.value },
           include: { admin: true },
         });
 
-        if (!sessionRecord || sessionRecord.expiresAt < new Date()) {
-          if (sessionRecord) {
-            await prisma.session.delete({
-              where: { id: sessionRecord.id },
-            });
-          }
+        if (!adminSession) {
           set.status = 401;
-          return { error: 'Sesión expirada' };
+          return { error: 'No autorizado' };
         }
 
         const admin = await prisma.admin.findUnique({
-          where: { id: sessionRecord.adminId },
+          where: { id: adminSession.adminId },
           select: {
             id: true,
             email: true,
@@ -125,5 +113,5 @@ export const authRoutes = new Elysia({ prefix: '/auth' })
         }
 
         return { admin };
-      })
+      }, withAuth)
   );
