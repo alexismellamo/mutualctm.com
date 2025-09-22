@@ -5,14 +5,24 @@ services:
       target: api
     container_name: ctm-api
     restart: unless-stopped
+    ports:
+      - "3001:3001"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - API_PORT=3001
       - DATABASE_URL=file:/app/data/dev.db
       - TZ=America/Mexico_City
     volumes:
       - ./data:/app/data
       - ./storage:/app/storage
+    networks:
+      - ctm-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   web:
     build:
@@ -20,7 +30,20 @@ services:
       target: web
     container_name: ctm-web
     restart: unless-stopped
+    ports:
+      - "8080:80"
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+    networks:
+      - ctm-network
+
+networks:
+  ctm-network:
+    driver: bridge
+
+volumes:
+  ctm-data:
+  ctm-storage:
 
 

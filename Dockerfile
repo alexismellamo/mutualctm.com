@@ -1,32 +1,54 @@
 FROM oven/bun:1.2.21-alpine AS base
 WORKDIR /app
+
+# Install curl for health checks
 RUN apk add --no-cache curl
+
+# Copy package files for dependency resolution
 COPY package.json bun.lock turbo.json biome.json ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
 COPY packages/db/package.json ./packages/db/
 COPY packages/schema/package.json ./packages/schema/
+
+# Install all dependencies
 RUN bun install --frozen-lockfile
-COPY apps/api ./apps/api
-COPY apps/web ./apps/web
-COPY packages/db ./packages/db
-COPY packages/schema ./packages/schema
-RUN bun --cwd packages/db run db:generate
-RUN bun --cwd apps/web run build
-RUN bun --cwd apps/api run build
+
+# Copy all source code
+COPY apps ./apps
+COPY packages ./packages
+
+# Build packages in correct dependency order
+RUN bun run db:generate
+RUN bun run build
 
 FROM oven/bun:1.2.21-alpine AS api
 WORKDIR /app
+
+# Install curl for health checks
 RUN apk add --no-cache curl
-COPY --from=base /app /app
-RUN bun --cwd /app/packages/db run db:generate
-RUN bun --cwd /app/apps/api run build
+
+# Copy built application
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/turbo.json ./turbo.json
+COPY --from=base /app/packages ./packages
+COPY --from=base /app/apps/api ./apps/api
+
+# Ensure Prisma client is available in the final container
+RUN cd packages/db && bun run db:generate
+
 WORKDIR /app/apps/api
-ENV NODE_ENV=development
+
+# Set production environment
+ENV NODE_ENV=production
 ENV API_PORT=3001
 ENV DATABASE_URL=file:/app/data/dev.db
+
 EXPOSE 3001
-CMD ["bun","/app/apps/api/dist/index.js"]
+
+# Use the start script which runs the built JS file
+CMD ["bun", "run", "start"]
 
 FROM oven/bun:1.2.21-alpine AS web-build
 WORKDIR /app
