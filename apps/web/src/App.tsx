@@ -12,6 +12,22 @@ const App: Component = () => {
     await authStore.checkAuth();
   });
 
+  const ProtectedRoute: Component<{ component: Component }> = (props) => (
+    <Show
+      when={authStore.isInitialized()}
+      fallback={
+        <div class="flex items-center justify-center min-h-screen">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-ctm-red" />
+          <span class="ml-3 text-gray-600">Verificando autenticación...</span>
+        </div>
+      }
+    >
+      <Show when={authStore.admin()} fallback={<LoginPage onLogin={() => {}} />}>
+        <props.component />
+      </Show>
+    </Show>
+  );
+
   return (
     <div class="min-h-screen">
       <Router>
@@ -19,27 +35,11 @@ const App: Component = () => {
         <Route path="/validation/:id" component={ValidationPage} />
 
         {/* Protected routes - require authentication */}
+        <Route path="/" component={() => <ProtectedRoute component={DashboardPage} />} />
+        <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
         <Route
-          path="/*"
-          component={() => (
-            <Show
-              when={authStore.isInitialized()}
-              fallback={
-                <div class="flex items-center justify-center min-h-screen">
-                  <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-ctm-red" />
-                  <span class="ml-3 text-gray-600">Verificando autenticación...</span>
-                </div>
-              }
-            >
-              <Show when={authStore.admin()} fallback={<LoginPage onLogin={() => {}} />}>
-                <Router>
-                  <Route path="/" component={DashboardPage} />
-                  <Route path="/settings" component={SettingsPage} />
-                  <Route path="/signature-test" component={SignatureTestPage} />
-                </Router>
-              </Show>
-            </Show>
-          )}
+          path="/signature-test"
+          component={() => <ProtectedRoute component={SignatureTestPage} />}
         />
       </Router>
     </div>
