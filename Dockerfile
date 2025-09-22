@@ -1,8 +1,8 @@
 FROM oven/bun:1.2.21-alpine AS base
 WORKDIR /app
 
-# Install wget for health checks (more reliable in Alpine)
-RUN apk add --no-cache wget
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy package files for dependency resolution
 COPY package.json bun.lock turbo.json biome.json ./
@@ -25,8 +25,8 @@ RUN bun run build
 FROM oven/bun:1.2.21-alpine AS api
 WORKDIR /app
 
-# Install wget for health checks (more reliable in Alpine)
-RUN apk add --no-cache wget
+# Install curl for health checks
+RUN apk add --no-cache curl
 
 # Copy built application
 COPY --from=base /app/node_modules ./node_modules

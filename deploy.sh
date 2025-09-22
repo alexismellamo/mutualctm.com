@@ -38,7 +38,7 @@ docker compose up --build -d
 # Wait for API to be healthy
 echo "⏳ Waiting for API to be healthy..."
 for i in {1..30}; do
-    if docker compose exec api wget --no-verbose --tries=1 --spider http://localhost:3001/api/v1/health >/dev/null 2>&1; then
+    if docker compose exec api curl -f http://localhost:3001/api/v1/health/ >/dev/null 2>&1; then
         print_status "API is healthy!"
         break
     fi
