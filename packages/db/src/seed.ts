@@ -74,10 +74,6 @@ async function main() {
 
     try {
       const fields = parseCSVLine(line);
-      if (fields.length < 12) {
-        console.log(`⚠️  Skipping line ${i + 1}: insufficient fields`);
-        continue;
-      }
 
       const [folio, nombre, telefono, calle, colonia, cp, municipio, estado, edad, licencia, vigencia, gafete] = fields;
 
@@ -89,11 +85,6 @@ async function main() {
 
       // Parse name into components
       const nameParts = nombre.split(' ').filter(part => part.trim());
-      if (nameParts.length < 2) {
-        console.log(`⚠️  Skipping line ${i + 1}: invalid name format (${nombre})`);
-        continue;
-      }
-
       const firstName = nameParts[0];
       const lastName = nameParts[1];
       const secondLastName = nameParts.length > 2 ? nameParts.slice(2).join(' ') : undefined;
@@ -104,10 +95,6 @@ async function main() {
 
       // Validate phone number (should be 10 digits)
       const cleanPhone = telefono.replace(/\D/g, '');
-      if (cleanPhone.length !== 10) {
-        console.log(`⚠️  Skipping line ${i + 1}: invalid phone number (${telefono})`);
-        continue;
-      }
 
       // Create user record
       const userData = {
