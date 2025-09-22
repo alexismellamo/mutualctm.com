@@ -20,7 +20,7 @@ ENV NODE_ENV=development
 ENV API_PORT=3001
 ENV DATABASE_URL=file:/app/data/dev.db
 EXPOSE 3001
-CMD sh -c "bun --cwd /app/packages/db run migrate:prod && bun --cwd /app/apps/api run build && bun --cwd /app/apps/api run start"
+CMD ["bun","run","start"]
 
 FROM oven/bun:1.2.21-alpine AS web-build
 WORKDIR /app
