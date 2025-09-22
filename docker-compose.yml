@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      target: api
+    container_name: ctm-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - API_PORT=3001
+      - DATABASE_URL=file:/app/data/dev.db
+      - TZ=America/Mexico_City
+    volumes:
+      - ./data:/app/data
+      - ./storage:/app/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    build:
+      context: .
+      target: web
+    container_name: ctm-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+
+
