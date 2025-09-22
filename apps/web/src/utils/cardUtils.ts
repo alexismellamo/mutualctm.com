@@ -4,7 +4,7 @@ import type { User } from '../pages/DashboardPage';
 /**
  * Formats user name with proper capitalization
  */
-export const formatUserName = (user?: User): string => {
+export const formatUserName = (user?: User | null): string => {
   if (!user) return '';
   const parts = [user.firstName, user.lastName.toUpperCase()];
   if (user.secondLastName) {
@@ -45,7 +45,7 @@ export const formatPhone = (phone: string): string => {
 /**
  * Gets formatted vigency date from user
  */
-export const getVigencyDate = (user: User): string => {
+export const getVigencyDate = (user: User | null): string => {
   if (!user || !user.vigencia) return '';
   return formatDate(user.vigencia);
 };
@@ -53,16 +53,16 @@ export const getVigencyDate = (user: User): string => {
 /**
  * Gets photo URL for user with cache busting
  */
-export const getPhotoUrl = (user: User): string | null => {
-  if (!user.id || !user.photoPath) return null;
+export const getPhotoUrl = (user: User | null): string | null => {
+  if (!user || !user.id || !user.photoPath) return null;
   return `/api/v1/users/${user.id}/photo?t=${Date.now()}`;
 };
 
 /**
  * Gets signature URL for user with cache busting
  */
-export const getSignatureUrl = (user: User): string | null => {
-  if (!user.id || !user.signaturePath) return null;
+export const getSignatureUrl = (user: User | null): string | null => {
+  if (!user || !user.id || !user.signaturePath) return null;
   return `/storage/${user.signaturePath}?t=${Date.now()}`;
 };
 
