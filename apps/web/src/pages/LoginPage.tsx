@@ -91,10 +91,7 @@ const LoginPage: Component<Props> = (props) => {
             </button>
           </form>
 
-          <div class="mt-6 text-center text-sm text-gray-500">
-            <p>Credenciales por defecto:</p>
-            <p class="font-mono text-xs mt-1">admin@ctm.local / admin123</p>
-          </div>
+          
         </div>
       </div>
     </div>

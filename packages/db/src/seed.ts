@@ -15,8 +15,8 @@ async function main() {
   }
 
   // Create admin user with new credentials
-  const adminEmail = 'admin@ctm.local';
-  const adminPassword = 'ctm123';
+  const adminEmail = 'admin@mutualctm.com';
+  const adminPassword = 'mutualctm123';
   const hashedPassword = await hash(adminPassword);
 
   const admin = await prisma.admin.upsert({
