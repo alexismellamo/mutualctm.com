@@ -13,14 +13,17 @@ RUN bun --cwd apps/web run build
 RUN bun --cwd apps/api run build
 
 FROM oven/bun:1.2.21-alpine AS api
-WORKDIR /app/apps/api
+WORKDIR /app
 RUN apk add --no-cache curl
 COPY --from=base /app /app
+RUN bun --cwd /app/packages/db run db:generate
+RUN bun --cwd /app/apps/api run build
+WORKDIR /app/apps/api
 ENV NODE_ENV=development
 ENV API_PORT=3001
 ENV DATABASE_URL=file:/app/data/dev.db
 EXPOSE 3001
-CMD sh -c "bun run build && bun run start"
+CMD ["bun","run","start"]
 
 FROM oven/bun:1.2.21-alpine AS web-build
 WORKDIR /app
