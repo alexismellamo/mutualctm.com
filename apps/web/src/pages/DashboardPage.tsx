@@ -1,5 +1,5 @@
-import { A } from '@solidjs/router';
-import { type Component, Show, createSignal } from 'solid-js';
+import { A, useSearchParams } from '@solidjs/router';
+import { type Component, Show, createSignal, onMount } from 'solid-js';
 import ctmLogo from '../assets/ctm-logo.png';
 import CardPreview from '../components/CardPreview';
 import SearchPanel from '../components/SearchPanel';
@@ -36,22 +36,63 @@ export type User = {
 };
 
 const DashboardPage: Component = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedUser, setSelectedUser] = createSignal<User | null>(null);
   const [isCreatingNew, setIsCreatingNew] = createSignal(false);
+
+  const fetchUserById = async (userId: string): Promise<User | null> => {
+    try {
+      const response = await fetch(`/api/v1/users/${userId}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        return null;
+      }
+
+      const data = await response.json();
+      return data.user || null;
+    } catch (err) {
+      console.error('Error fetching user by ID:', err);
+      return null;
+    }
+  };
+
+  onMount(async () => {
+    const userIdParam = searchParams.userId;
+    const userId = Array.isArray(userIdParam) ? userIdParam[0] : userIdParam;
+    const isNew = searchParams.new === 'true';
+
+    if (userId && !isNew) {
+      const user = await fetchUserById(userId);
+      if (user) {
+        setSelectedUser(user);
+        setIsCreatingNew(false);
+      } else {
+        setSearchParams({ userId: undefined, new: undefined, query: undefined });
+      }
+    } else if (isNew) {
+      setSelectedUser(null);
+      setIsCreatingNew(true);
+    }
+  });
 
   const handleUserSelect = (user: User) => {
     setSelectedUser(user);
     setIsCreatingNew(false);
+    setSearchParams({ userId: user.id, new: undefined, query: undefined });
   };
 
   const handleCreateNew = () => {
     setSelectedUser(null);
     setIsCreatingNew(true);
+    setSearchParams({ userId: undefined, new: 'true', query: undefined });
   };
 
   const handleUserSaved = (user: User) => {
     setSelectedUser(user);
     setIsCreatingNew(false);
+    setSearchParams({ userId: user.id, new: undefined, query: undefined });
   };
 
   const handleLogout = async () => {
@@ -107,7 +148,11 @@ const DashboardPage: Component = () => {
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Search Panel - Top (Horizontal) */}
         <div class="w-full">
-          <SearchPanel onUserSelect={handleUserSelect} onCreateNew={handleCreateNew} />
+          <SearchPanel 
+            onUserSelect={handleUserSelect} 
+            onCreateNew={handleCreateNew}
+            initialQuery={Array.isArray(searchParams.query) ? searchParams.query[0] : searchParams.query}
+          />
         </div>
 
         {/* Two Panel Layout - Bottom */}
