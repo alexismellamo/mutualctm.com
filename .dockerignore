@@ -1,0 +1,14 @@
+.git
+.gitignore
+.DS_Store
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+data
+storage
+.turbo
+apps/web/dist
+apps/api/dist
+dist
+*.log
+

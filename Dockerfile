@@ -7,7 +7,10 @@ COPY apps/web/package.json ./apps/web/
 COPY packages/db/package.json ./packages/db/
 COPY packages/schema/package.json ./packages/schema/
 RUN bun install --frozen-lockfile
-COPY . .
+COPY apps/api ./apps/api
+COPY apps/web ./apps/web
+COPY packages/db ./packages/db
+COPY packages/schema ./packages/schema
 RUN bun --cwd packages/db run db:generate
 RUN bun --cwd apps/web run build
 RUN bun --cwd apps/api run build
