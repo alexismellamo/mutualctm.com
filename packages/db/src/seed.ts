@@ -81,9 +81,9 @@ async function main() {
 
       const [folio, nombre, telefono, calle, colonia, cp, municipio, estado, edad, licencia, vigencia, gafete] = fields;
 
-      // Skip if essential fields are missing
-      if (!nombre || !telefono || !licencia || !gafete) {
-        console.log(`⚠️  Skipping line ${i + 1}: missing essential data (${nombre || 'NO_NAME'})`);
+      // Skip only if no name at all
+      if (!nombre || nombre.trim() === '' || nombre === 'NO_NAME') {
+        console.log(`⚠️  Skipping line ${i + 1}: no valid name provided`);
         continue;
       }
 
