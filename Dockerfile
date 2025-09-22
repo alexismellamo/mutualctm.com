@@ -28,9 +28,13 @@ RUN apk add --no-cache curl
 COPY package.json bun.lock turbo.json biome.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/schema/package.json ./packages/schema/
+COPY apps/api/package.json ./apps/api/
+COPY packages/db/package.json ./packages/db/
 RUN bun install --frozen-lockfile
 COPY apps/web apps/web
 COPY packages/schema packages/schema
+COPY apps/api apps/api
+COPY packages/db packages/db
 RUN bun run --cwd apps/web build
 
 FROM nginx:1.27-alpine AS web
