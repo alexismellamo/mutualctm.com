@@ -50,7 +50,6 @@ const UserForm: Component<Props> = (props) => {
   // Load user data when user changes
   createEffect(() => {
     const user = props.user;
-    console.log(user?.vigencia);
     if (user) {
       setFormData({
         firstName: user.firstName,
