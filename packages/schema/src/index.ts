@@ -22,6 +22,7 @@ export const createUserSchema = z.object({
   phoneMx: z.string().regex(/^\d{10}$/, 'Teléfono debe tener 10 dígitos'),
   licenciaNum: z.string().min(1, 'Número de licencia requerido'),
   gafeteNum: z.string().min(1, 'Número de gafete requerido'),
+  folio: z.string().optional(),
   address: z.object({
     street: z.string().min(1, 'Calle requerida'),
     exteriorNo: z.string().optional(),

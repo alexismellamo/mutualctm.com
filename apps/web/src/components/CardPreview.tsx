@@ -51,8 +51,9 @@ const CardPreview: Component<Props> = (props) => {
     try {
       const validationUrl = `${window.location.origin}/validation/${userId}`;
       return await QRCode.toDataURL(validationUrl, {
-        width: 80,
         margin: 1,
+        height: '100%',
+        width: '100%',
         color: {
           dark: '#000000',
           light: '#FFFFFF',
@@ -134,7 +135,7 @@ const CardPreview: Component<Props> = (props) => {
                   }}
                 >
                   {/* Header with Logos and Title */}
-                  <div class="flex items-center justify-between p-1 gap-12">
+                  <div class="flex items-center justify-between p-1 gap-1">
                     {/* Top Left Logo */}
                     <div class="w-6 h-6 bg-gradient-to-br from-red-600 to-red-800 rounded-full flex items-center justify-center border border-yellow-400 flex-shrink-0">
                       <img src={ctmLogo} alt="CTM Logo" class="h-4 w-4 object-contain" />
@@ -143,8 +144,8 @@ const CardPreview: Component<Props> = (props) => {
                     {/* Center Title */}
                     <div class="flex-1 text-center px-1">
                       <div
-                        class="font-bold text-gray-900"
-                        style="font-size: 7px; letter-spacing: 0.2px;"
+                        class="font-bold text-black"
+                        style="font-size: 8px; letter-spacing: 0.2px;"
                       >
                         UNION DE PERMISIONARIOS DE SITIOS DE TAXIS DEL EDO. DE COLIMA A. C.
                       </div>
@@ -159,7 +160,7 @@ const CardPreview: Component<Props> = (props) => {
                   {/* Main Content */}
                   <div class="flex-1 px-4 flex flex-col justify-center text-left">
                     {/* Red and Green Line */}
-                    <div class="flex mb-2">
+                    <div class="flex mb-1">
                       <div class="flex-1 h-0.5 bg-red-600" />
                       <div class="flex-1 h-0.5 bg-green-600" />
                     </div>
@@ -167,13 +168,13 @@ const CardPreview: Component<Props> = (props) => {
                     {/* Photo and All Content Section */}
                     <div class="flex gap-3 flex-1">
                       {/* Photo Section with Numbers */}
-                      <div class="flex flex-col w-16 flex-shrink-0">
+                      <div class="flex flex-col w-20 flex-shrink-0">
                         {/* Photo */}
-                        <div class="h-20 border border-gray-600 overflow-hidden bg-gray-50 rounded-md">
+                        <div class="h-20 border border-gray-600 overflow-hidden bg-gray-50 rounded-md w-16">
                           <Show
                             when={props.user && getPhotoUrl(props.user)}
                             fallback={
-                              <div class="w-full h-full flex items-center justify-center">
+                              <div class=" h-full flex items-center justify-center w-full">
                                 <div class="text-center text-gray-400">
                                   <svg
                                     class="w-6 h-6 mx-auto mb-1"
@@ -191,24 +192,28 @@ const CardPreview: Component<Props> = (props) => {
                             <img
                               src={props.user ? getPhotoUrl(props.user) || '' : ''}
                               alt="Foto del usuario"
-                              class="w-full h-full object-cover print-photo rounded-md"
+                              class="h-full object-cover print-photo rounded-md w-full"
                             />
                           </Show>
                         </div>
 
                         {/* Credential Numbers */}
-                        <div class="mt-1 text-left" style="font-size: 7px;">
-                          <div class="text-gray-800">
-                            <span class="font-bold">No. Licencia:</span>
+                        <div class="mt-1 text-left" style="font-size: 8px;">
+                          <div class="text-black text-nowrap">
+                            <span class="font-bold">Credencial: </span>
+                            <span class="text-black font-mono">{props.user?.folio || '0000'}</span>
                           </div>
-                          <div class="text-gray-900 font-mono">
-                            {props.user?.licenciaNum || '000000'}
+                          <div class="text-black text-nowrap">
+                            <span class="font-bold">Licencia: </span>
+                            <span class="text-black font-mono">
+                              {props.user?.licenciaNum || '000000'}
+                            </span>
                           </div>
-                          <div class="text-gray-800 mt-1">
-                            <span class="font-bold">No. GAF:</span>
-                          </div>
-                          <div class="text-gray-900 font-mono">
-                            {props.user?.gafeteNum || '000000'}
+                          <div class="text-black text-nowrap">
+                            <span class="font-bold">Gafete: </span>
+                            <span class="text-black font-mono">
+                              {props.user?.gafeteNum || '000000'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -219,44 +224,39 @@ const CardPreview: Component<Props> = (props) => {
                         <div class="space-y-1">
                           {/* Subtitle */}
                           <div>
-                            <div
-                              class="font-bold text-gray-800 text-center"
-                              style="font-size: 8px;"
-                            >
+                            <div class="font-bold text-black" style="font-size: 9px;">
                               FONDO DE RESPONSABILIDAD CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M
                             </div>
                           </div>
 
                           {/* Validity */}
                           <div>
-                            <div class="font-medium text-gray-700" style="font-size: 7px;">
+                            <div class="font-medium text-black" style="font-size: 8px;">
                               Valida en caso de accidente vial
                             </div>
                           </div>
 
                           {/* User Info */}
                           <div class="mt-1" style="font-size: 9px;">
-                            <div class="text-gray-800">
+                            <div class="text-black">
                               <div class="font-bold">La presente acredita al C.:</div>
-                              <div class="text-gray-900 capitalize">
+                              <div class="text-black capitalize">
                                 {formatUserName(props.user || undefined)?.toLowerCase()}
                               </div>
                             </div>
 
-                            <div class="font-bold text-gray-800 mt-1">Con Domicilio en:</div>
-                            <div class="text-gray-900 leading-tight">
+                            <div class="font-bold text-black mt-1">Con Domicilio en:</div>
+                            <div class="text-black leading-tight">
                               <div>
                                 {props.user?.address?.street} {props.user?.address?.exteriorNo},{' '}
-                                {props.user?.address?.neighborhood}
-                              </div>
-                              <div>
+                                {props.user?.address?.neighborhood}{' '}
                                 {props.user?.address?.municipality}, {props.user?.address?.state},
                                 CP {props.user?.address?.postalCode}
                               </div>
                             </div>
 
-                            <div class="text-gray-800 mt-2">
-                              <span class="text-gray-900">
+                            <div class="text-black mt-2">
+                              <span class="text-black">
                                 {props.user ? calculateAge(props.user.dob) : ''} años -{' '}
                                 {props.user ? formatPhone(props.user.phoneMx) : ''}
                               </span>
@@ -268,10 +268,10 @@ const CardPreview: Component<Props> = (props) => {
                   </div>
 
                   {/* Bottom Section - Absolute positioned */}
-                  <div class="absolute bottom-2 left-2 right-2 flex justify-between items-end">
+                  <div class="absolute bottom-1 left-4 right-2 flex justify-between items-end">
                     {/* Vigency */}
-                    <div style="font-size: 7px;">
-                      <span class="font-bold text-gray-800">Vigente hasta:</span>
+                    <div class="text-left text-[8px]">
+                      <p class="font-bold text-black mr-1">Vigente hasta:</p>
                       {props.user ? getVigencyDate(props.user) : ''}
                     </div>
 
@@ -285,8 +285,8 @@ const CardPreview: Component<Props> = (props) => {
                         />
                       </div>
                       <div
-                        class="font-bold text-gray-700 border-t border-gray-400"
-                        style="font-size: 7px;"
+                        class="font-bold text-black border-t border-gray-400"
+                        style="font-size: 8px;"
                       >
                         PRESIDENTE
                       </div>
@@ -306,63 +306,63 @@ const CardPreview: Component<Props> = (props) => {
                   }}
                 >
                   {/* Header with two logos */}
-                  <div class="flex justify-between items-start mb-2">
+                  <div class="flex justify-between items-start mb-0">
                     {/* Top Left Logo */}
-                    <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                    <div class="w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
                       <img
                         src={ctmLogo}
                         alt="CTM Logo"
-                        class="h-5 w-5 object-contain grayscale print-grayscale"
+                        class="h-3 w-3 object-contain grayscale print-grayscale"
                       />
                     </div>
 
                     {/* Top Right Logo */}
-                    <div class="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
+                    <div class="w-4 h-4 bg-gray-800 rounded-full flex items-center justify-center border-2 border-gray-600">
                       <img
                         src={ctmLogo}
                         alt="CTM Logo"
-                        class="h-5 w-5 object-contain grayscale print-grayscale"
+                        class="h-3 w-3 object-contain grayscale print-grayscale"
                       />
                     </div>
                   </div>
 
                   {/* Numbers section - taking most space */}
-                  <div class="flex-1 flex items-center justify-center mb-4">
+                  <div class="flex items-center justify-center mb-2">
                     <div class="grid grid-cols-3 gap-6 text-center w-full">
                       <div>
-                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                        <div class="font-bold text-black" style="font-size: 8px;">
                           AJUSTADOR
                         </div>
-                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                        <div class="font-bold text-black mb-1" style="font-size: 8px;">
                           COLIMA
                         </div>
-                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                        <div class="font-mono font-bold text-black" style="font-size: 10px;">
                           {settings()?.ajustadorColima
                             ? formatPhone(settings()?.ajustadorColima)
                             : ''}
                         </div>
                       </div>
                       <div>
-                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                        <div class="font-bold text-black" style="font-size: 8px;">
                           AJUSTADOR
                         </div>
-                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                        <div class="font-bold text-black mb-1" style="font-size: 8px;">
                           TECOMÁN
                         </div>
-                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                        <div class="font-mono font-bold text-black" style="font-size: 10px;">
                           {settings()?.ajustadorTecoman
                             ? formatPhone(settings()?.ajustadorTecoman)
                             : ''}
                         </div>
                       </div>
                       <div>
-                        <div class="font-bold text-gray-700" style="font-size: 7px;">
+                        <div class="font-bold text-black" style="font-size: 8px;">
                           AJUSTADOR
                         </div>
-                        <div class="font-bold text-gray-700 mb-1" style="font-size: 7px;">
+                        <div class="font-bold text-black mb-1" style="font-size: 8px;">
                           MANZANILLO
                         </div>
-                        <div class="font-mono font-bold text-gray-900" style="font-size: 9px;">
+                        <div class="font-mono font-bold text-black" style="font-size: 10px;">
                           {settings()?.ajustadorManzanillo
                             ? formatPhone(settings()?.ajustadorManzanillo)
                             : ''}
@@ -372,10 +372,10 @@ const CardPreview: Component<Props> = (props) => {
                   </div>
 
                   {/* Bottom section with legal text and signature */}
-                  <div>
+                  <div class="flex-1 flex flex-col justify-between">
                     {/* Legal Text - AT TOP */}
                     <div class="text-center mb-1">
-                      <div class="text-gray-700 leading-tight" style="font-size: 7px;">
+                      <div class="text-black leading-tight" style="font-size: 7px;">
                         <div class="font-bold mb-1">
                           VALIDA ÚNICAMENTE EN CARROS ASEGURADOS POR EL FONDO DE RESPONSABILIDAD
                           CIVIL DEL PASAJERO Y COBERTURA AMPLIA C.T.M.
@@ -388,7 +388,7 @@ const CardPreview: Component<Props> = (props) => {
                     </div>
 
                     {/* QR Code and Driver Signature - AT VERY BOTTOM */}
-                    <div class="flex justify-between items-end">
+                    <div class="flex justify-between items-end flex-1">
                       {/* QR Code - LEFT SIDE */}
                       <div class="flex flex-col items-center">
                         <Show when={props.user && qrCodeData()}>
@@ -396,8 +396,7 @@ const CardPreview: Component<Props> = (props) => {
                             <img
                               src={qrCodeData() || ''}
                               alt="QR Code"
-                              class="object-contain"
-                              style="height: 45px; width: 45px;"
+                              class="object-contain h-[75px] w-auto"
                             />
                           </div>
                         </Show>
@@ -423,8 +422,8 @@ const CardPreview: Component<Props> = (props) => {
                             />
                           </div>
                         </Show>
-                        <div class="border-t border-gray-400 pt-1 w-20">
-                          <div class="text-gray-700 font-medium" style="font-size: 6px;">
+                        <div class="border-t border-gray-400 pt-1 w-36">
+                          <div class="text-black font-medium" style="font-size: 6px;">
                             Firma del Chofer
                           </div>
                         </div>

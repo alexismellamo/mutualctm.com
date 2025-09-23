@@ -35,6 +35,10 @@ docker image prune -f || true
 echo "🔨 Building and starting containers..."
 docker compose up --build -d
 
+# Run database migrations
+echo "🗄️ Running database migrations..."
+docker compose exec api bun --cwd packages/db run prisma migrate deploy
+
 # Wait for API to be healthy
 echo "⏳ Waiting for API to be healthy..."
 for i in {1..30}; do

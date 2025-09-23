@@ -51,6 +51,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         phoneMx: t.String(),
         licenciaNum: t.String(),
         gafeteNum: t.String(),
+        folio: t.Optional(t.String()),
         address: t.Object({
           street: t.String(),
           exteriorNo: t.Optional(t.String()),
@@ -131,6 +132,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
           phoneMx: t.String(),
           licenciaNum: t.String(),
           gafeteNum: t.String(),
+          folio: t.Optional(t.String()),
           address: t.Object({
             street: t.String(),
             exteriorNo: t.Optional(t.String()),
@@ -193,7 +195,8 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
             user.secondLastName?.toLowerCase().includes(searchTerm) ||
             user.phoneMx.includes(searchQuery) ||
             user.licenciaNum.includes(searchQuery) ||
-            user.gafeteNum.includes(searchQuery)
+            user.gafeteNum.includes(searchQuery) ||
+            user.folio?.includes(searchQuery)
         )
         .slice(0, 20);
     } else {

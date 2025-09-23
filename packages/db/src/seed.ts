@@ -78,7 +78,7 @@ async function main() {
       const fields = parseCSVLine(line);
 
       const [
-        _folio,
+        folio,
         nombre,
         telefono,
         calle,
@@ -121,6 +121,7 @@ async function main() {
         phoneMx: cleanPhone,
         licenciaNum: licencia,
         gafeteNum: gafete,
+        folio: folio ? folio.padStart(4, '0') : null, // Ensure 4-digit format
       };
 
       // Create address if we have enough data

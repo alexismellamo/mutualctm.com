@@ -26,6 +26,7 @@ const UserForm: Component<Props> = (props) => {
     phoneMx: '',
     licenciaNum: '',
     gafeteNum: '',
+    folio: '',
     address: {
       street: '',
       exteriorNo: '',
@@ -47,6 +48,12 @@ const UserForm: Component<Props> = (props) => {
   const [signaturePreview, setSignaturePreview] = createSignal<string>('');
   const [isSignatureModalOpen, setIsSignatureModalOpen] = createSignal(false);
 
+  // Autosave states
+  const [autoSaveStatus, setAutoSaveStatus] = createSignal<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle'
+  );
+  let autoSaveTimeout: NodeJS.Timeout;
+
   // Load user data when user changes
   createEffect(() => {
     const user = props.user;
@@ -60,6 +67,7 @@ const UserForm: Component<Props> = (props) => {
         phoneMx: user.phoneMx,
         licenciaNum: user.licenciaNum,
         gafeteNum: user.gafeteNum,
+        folio: user.folio || '',
         address: {
           street: user.address?.street || '',
           exteriorNo: user.address?.exteriorNo || '',
@@ -83,6 +91,7 @@ const UserForm: Component<Props> = (props) => {
         phoneMx: '',
         licenciaNum: '',
         gafeteNum: '',
+        folio: '',
         address: {
           street: '',
           exteriorNo: '',
@@ -97,6 +106,57 @@ const UserForm: Component<Props> = (props) => {
       });
     }
   });
+
+  // Autosave function
+  const performAutoSave = async () => {
+    if (props.isNew || !props.user?.id) return;
+
+    setAutoSaveStatus('saving');
+
+    try {
+      const data = formData();
+      const response = await fetch(`/api/v1/users/${props.user.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Error al autoguardar');
+      }
+
+      setAutoSaveStatus('saved');
+      props.onUserSaved(result.user);
+
+      // Clear saved status after 2 seconds
+      setTimeout(() => {
+        setAutoSaveStatus('idle');
+      }, 2000);
+    } catch (err) {
+      setAutoSaveStatus('error');
+      console.error('Autosave error:', err);
+
+      // Clear error status after 3 seconds
+      setTimeout(() => {
+        setAutoSaveStatus('idle');
+      }, 3000);
+    }
+  };
+
+  // Debounced autosave
+  const triggerAutoSave = () => {
+    if (props.isNew || !props.user?.id) return;
+
+    clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      performAutoSave();
+    }, 1000); // 1 second delay
+  };
 
   const updateFormData = (field: string, value: string) => {
     if (field.startsWith('address.')) {
@@ -114,6 +174,9 @@ const UserForm: Component<Props> = (props) => {
         [field]: value,
       }));
     }
+
+    // Trigger autosave after field update
+    triggerAutoSave();
   };
 
   const handleSignatureSaved = (signatureBlob: Blob) => {
@@ -121,6 +184,84 @@ const UserForm: Component<Props> = (props) => {
     // Create preview URL
     const url = URL.createObjectURL(signatureBlob);
     setSignaturePreview(url);
+
+    // Auto-upload signature if editing existing user
+    if (!props.isNew && props.user?.id) {
+      uploadSignature(signatureBlob);
+    }
+  };
+
+  const handlePhotoSelected = (photoBlob: Blob | null) => {
+    setSelectedPhoto(photoBlob);
+
+    // Auto-upload photo if editing existing user
+    if (photoBlob && !props.isNew && props.user?.id) {
+      uploadPhoto(photoBlob);
+    }
+  };
+
+  const uploadPhoto = async (photoBlob: Blob) => {
+    if (!props.user?.id) return;
+
+    setAutoSaveStatus('saving');
+    try {
+      const formData = new FormData();
+      formData.append('file', photoBlob, `photo-${Date.now()}.jpg`);
+
+      const response = await fetch(`/api/v1/users/${props.user.id}/photo`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Update user with new photo path
+        const updatedUser = { ...props.user, photoPath: result.path };
+        props.onUserSaved(updatedUser);
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      } else {
+        setAutoSaveStatus('error');
+        setTimeout(() => setAutoSaveStatus('idle'), 3000);
+      }
+    } catch (err) {
+      setAutoSaveStatus('error');
+      console.error('Photo upload error:', err);
+      setTimeout(() => setAutoSaveStatus('idle'), 3000);
+    }
+  };
+
+  const uploadSignature = async (signatureBlob: Blob) => {
+    if (!props.user?.id) return;
+
+    setAutoSaveStatus('saving');
+    try {
+      const formData = new FormData();
+      formData.append('file', signatureBlob, `signature-${Date.now()}.png`);
+
+      const response = await fetch(`/api/v1/users/${props.user.id}/signature`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        // Update user with new signature path
+        const updatedUser = { ...props.user, signaturePath: result.path };
+        props.onUserSaved(updatedUser);
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      } else {
+        setAutoSaveStatus('error');
+        setTimeout(() => setAutoSaveStatus('idle'), 3000);
+      }
+    } catch (err) {
+      setAutoSaveStatus('error');
+      console.error('Signature upload error:', err);
+      setTimeout(() => setAutoSaveStatus('idle'), 3000);
+    }
   };
 
   const handleSubmit = async (e: Event) => {
@@ -228,9 +369,49 @@ const UserForm: Component<Props> = (props) => {
   return (
     <div class="card h-full overflow-y-auto">
       <div class="mb-6">
-        <h2 class="text-lg font-semibold text-ctm-text">
-          {props.isNew ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
-        </h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold text-ctm-text">
+            {props.isNew ? 'Crear Nuevo Usuario' : 'Editar Usuario'}
+          </h2>
+
+          {/* Autosave status indicator */}
+          <Show when={!props.isNew}>
+            <div class="flex items-center text-sm">
+              <Show when={autoSaveStatus() === 'saving'}>
+                <div class="flex items-center text-blue-600">
+                  <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  Guardando...
+                </div>
+              </Show>
+              <Show when={autoSaveStatus() === 'saved'}>
+                <div class="flex items-center text-green-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <title>Guardado exitosamente</title>
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Guardado
+                </div>
+              </Show>
+              <Show when={autoSaveStatus() === 'error'}>
+                <div class="flex items-center text-red-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <title>Error al guardar</title>
+                    <path
+                      fill-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Error al guardar
+                </div>
+              </Show>
+            </div>
+          </Show>
+        </div>
       </div>
 
       <Show when={error()}>
@@ -255,7 +436,7 @@ const UserForm: Component<Props> = (props) => {
               <PhotoManager
                 userId={props.user?.id}
                 currentPhotoPath={props.user?.photoPath}
-                onPhotoSelected={setSelectedPhoto}
+                onPhotoSelected={handlePhotoSelected}
               />
             </div>
 
@@ -371,6 +552,19 @@ const UserForm: Component<Props> = (props) => {
                   class="input-field"
                   value={formData().gafeteNum}
                   onInput={(e) => updateFormData('gafeteNum', e.currentTarget.value)}
+                />
+              </div>
+              <div>
+                <label for="folio" class="block text-sm font-medium text-gray-700 mb-1">
+                  Folio de Credencial
+                </label>
+                <input
+                  id="folio"
+                  type="text"
+                  class="input-field"
+                  placeholder="0001"
+                  value={formData().folio}
+                  onInput={(e) => updateFormData('folio', e.currentTarget.value)}
                 />
               </div>
             </div>
@@ -587,17 +781,19 @@ const UserForm: Component<Props> = (props) => {
         </div>
       </form>
 
-      {/* Sticky Actions */}
-      <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 -mb-6">
-        <button
-          type="submit"
-          form="user-form"
-          disabled={isLoading()}
-          class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading() ? 'Guardando...' : props.isNew ? 'Crear Usuario' : 'Actualizar Usuario'}
-        </button>
-      </div>
+      {/* Sticky Actions - Only show for new users */}
+      <Show when={props.isNew}>
+        <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 -mx-6 -mb-6">
+          <button
+            type="submit"
+            form="user-form"
+            disabled={isLoading()}
+            class="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading() ? 'Guardando...' : 'Crear Usuario'}
+          </button>
+        </div>
+      </Show>
 
       {/* Signature Modal */}
       <SignatureModal
