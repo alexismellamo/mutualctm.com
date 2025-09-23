@@ -37,7 +37,7 @@ docker compose up --build -d
 
 # Run database migrations
 echo "🗄️ Running database migrations..."
-docker compose exec api bun --cwd packages/db run prisma migrate deploy
+docker compose exec api bun run prisma migrate deploy --schema packages/db/prisma/schema.prisma
 
 # Wait for API to be healthy
 echo "⏳ Waiting for API to be healthy..."
