@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas';
 import type { User } from '../pages/DashboardPage';
+import { calculateAge as calculateAgeUtil, formatDate } from './dateUtils';
 
 /**
  * Formats user name with proper capitalization
@@ -14,41 +15,9 @@ export const formatUserName = (user: User | null | undefined): string => {
 };
 
 /**
- * Formats date to Mexican locale (DD/MM/YYYY)
+ * Calculates age from date of birth (exported from dateUtils)
  */
-export const formatDate = (dateString: string): string => {
-  if (!dateString) return '';
-
-  // Extract just the date part to avoid timezone issues (same as UserForm)
-  const datePart = dateString.split('T')[0]; // Gets YYYY-MM-DD
-
-  // Parse the date components manually to avoid timezone conversion
-  const [year, month, day] = datePart.split('-').map(Number);
-
-  // Validate the components
-  if (!year || !month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
-    console.error('Invalid date string:', dateString);
-    return '';
-  }
-
-  // Format as DD/MM/YYYY
-  return `${day.toString().padStart(2, '0')}/${month.toString().padStart(2, '0')}/${year}`;
-};
-
-/**
- * Calculates age from date of birth
- */
-export const calculateAge = (dob: string): number => {
-  const birthDate = new Date(dob);
-  const today = new Date();
-  const age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    return age - 1;
-  }
-  return age;
-};
+export const calculateAge = calculateAgeUtil;
 
 /**
  * Formats phone number with dashes (XXX-XXX-XXXX)

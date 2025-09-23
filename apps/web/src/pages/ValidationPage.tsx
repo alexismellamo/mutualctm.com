@@ -1,5 +1,6 @@
 import { useParams } from '@solidjs/router';
 import { createSignal, onMount, Show } from 'solid-js';
+import { formatDateLong, isVigenciaValid } from '../utils/dateUtils';
 
 type User = {
   id: string;
@@ -25,21 +26,9 @@ export default function ValidationPage() {
     return `${user.firstName} ${user.lastName} ${user.secondLastName || ''}`.trim();
   };
 
-  const isVigenciaValid = (vigencia?: string) => {
+  const isValidVigencia = (vigencia?: string) => {
     if (!vigencia) return false;
-    const vigenciaDate = new Date(vigencia);
-    const today = new Date();
-    return vigenciaDate >= today;
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'No especificada';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+    return isVigenciaValid(vigencia);
   };
 
   onMount(async () => {
@@ -48,7 +37,7 @@ export default function ValidationPage() {
 
       if (response.ok) {
         const data = await response.json();
-        const isValid = isVigenciaValid(data.user?.vigencia);
+        const isValid = isValidVigencia(data.user?.vigencia);
         setValidationResult({
           isValid,
           user: data.user,
@@ -115,22 +104,22 @@ export default function ValidationPage() {
                     <div class="block text-sm font-medium text-gray-500 mb-1">Vigencia</div>
                     <p
                       class={`text-lg font-semibold ${
-                        isVigenciaValid(validationResult()?.user?.vigencia)
+                        isValidVigencia(validationResult()?.user?.vigencia)
                           ? 'text-green-600'
                           : 'text-red-600'
                       }`}
                     >
-                      {formatDate(validationResult()?.user?.vigencia)}
+                      {formatDateLong(validationResult()?.user?.vigencia || '')}
                     </p>
                   </div>
 
-                  <Show when={!isVigenciaValid(validationResult()?.user?.vigencia)}>
+                  <Show when={!isValidVigencia(validationResult()?.user?.vigencia)}>
                     <div class="bg-red-50 border border-red-200 rounded-md p-3">
                       <p class="text-red-800 text-sm">⚠️ Esta credencial ha expirado</p>
                     </div>
                   </Show>
 
-                  <Show when={isVigenciaValid(validationResult()?.user?.vigencia)}>
+                  <Show when={isValidVigencia(validationResult()?.user?.vigencia)}>
                     <div class="bg-green-50 border border-green-200 rounded-md p-3">
                       <p class="text-green-800 text-sm">✅ Credencial vigente y válida</p>
                     </div>
