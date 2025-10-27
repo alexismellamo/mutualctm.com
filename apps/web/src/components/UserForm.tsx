@@ -104,6 +104,18 @@ const UserForm: Component<Props> = (props) => {
           references: '',
         },
       });
+
+      (async () => {
+        try {
+          const res = await fetch('/api/v1/users/next-folio', { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data?.nextFolio) {
+              setFormData((prev) => ({ ...prev, folio: data.nextFolio }));
+            }
+          }
+        } catch (_e) {}
+      })();
     }
   });
 

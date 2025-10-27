@@ -11,6 +11,20 @@ import { withAuth } from '../middleware/withAuth';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
   .guard(withAuth, (app) => app)
+  .get('/next-folio', async () => {
+    const lastWithFolio = await prisma.user.findFirst({
+      where: { folio: { not: null } },
+      orderBy: { createdAt: 'desc' },
+      select: { folio: true },
+    });
+
+    const parsed = lastWithFolio?.folio ? parseInt(lastWithFolio.folio, 10) : NaN;
+    const base = Number.isNaN(parsed) ? 3301 : Math.max(parsed, 3301);
+    const lastFolio = String(base).padStart(4, '0');
+    const nextFolio = String(base + 1).padStart(4, '0');
+
+    return { lastFolio, nextFolio };
+  })
   .post(
     '/',
     async ({ body, set }) => {
@@ -18,9 +32,27 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         const data = createUserSchema.parse(body);
         const { address, ...userData } = data;
 
+        let folioToUse = (data.folio || '').trim();
+        if (!folioToUse) {
+          const lastWithFolio = await prisma.user.findFirst({
+            where: { folio: { not: null } },
+            orderBy: { createdAt: 'desc' },
+            select: { folio: true },
+          });
+          const parsed = lastWithFolio?.folio ? parseInt(lastWithFolio.folio, 10) : NaN;
+          const base = Number.isNaN(parsed) ? 3301 : Math.max(parsed, 3301);
+          folioToUse = String(base + 1).padStart(4, '0');
+        } else {
+          const parsedManual = parseInt(folioToUse, 10);
+          if (!Number.isNaN(parsedManual)) {
+            folioToUse = String(parsedManual).padStart(4, '0');
+          }
+        }
+
         const user = await prisma.user.create({
           data: {
             ...userData,
+            folio: folioToUse,
             address: {
               create: address,
             },
