@@ -69,9 +69,12 @@ COPY packages/db packages/db
 RUN bun run --cwd apps/web build
 
 FROM nginx:1.27-alpine AS web
-COPY nginx.conf /etc/nginx/nginx.conf
+# The official nginx entrypoint renders templates at container startup. Keep
+# `api` as the Docker Compose default and override API_HOST on Railway.
+ENV API_HOST=api
+ENV NGINX_ENVSUBST_FILTER=API_HOST
+COPY nginx.conf /etc/nginx/templates/nginx.conf.template
 COPY --from=web-build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 8000
 CMD ["nginx","-g","daemon off;"]
-
 

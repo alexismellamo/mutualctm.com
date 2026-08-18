@@ -52,8 +52,7 @@ const CardPreview: Component<Props> = (props) => {
       const validationUrl = `${window.location.origin}/validation/${userId}`;
       return await QRCode.toDataURL(validationUrl, {
         margin: 1,
-        height: '100%',
-        width: '100%',
+        width: 256,
         color: {
           dark: '#000000',
           light: '#FFFFFF',

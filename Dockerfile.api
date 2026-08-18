@@ -1,0 +1,45 @@
+FROM oven/bun:1.2.21-alpine AS base
+WORKDIR /app
+
+RUN apk add --no-cache curl
+
+COPY package.json bun.lock turbo.json biome.json ./
+COPY apps/api/package.json ./apps/api/
+COPY apps/web/package.json ./apps/web/
+COPY packages/db/package.json ./packages/db/
+COPY packages/schema/package.json ./packages/schema/
+
+RUN bun install --frozen-lockfile
+
+COPY apps ./apps
+COPY packages ./packages
+
+RUN bun run db:generate
+RUN bun run build
+
+FROM oven/bun:1.2.21-alpine AS api
+WORKDIR /app
+
+RUN apk add --no-cache curl
+
+COPY --from=base /app/node_modules ./node_modules
+COPY --from=base /app/package.json ./package.json
+COPY --from=base /app/turbo.json ./turbo.json
+COPY --from=base /app/packages ./packages
+COPY --from=base /app/apps/api ./apps/api
+
+RUN cd packages/db && bun run db:generate
+
+WORKDIR /app/apps/api
+
+RUN mkdir -p /app/storage/photos /app/storage/signatures
+
+ENV NODE_ENV=production
+ENV API_PORT=3001
+ENV DATABASE_URL=file:/app/storage/dev.db
+
+EXPOSE 3001
+
+# Apply pending schema migrations before accepting traffic. Railway mounts the
+# persistent volume before this command runs.
+CMD ["sh", "-c", "cd /app/packages/db && bun run migrate:prod && cd /app/apps/api && exec bun run start"]
