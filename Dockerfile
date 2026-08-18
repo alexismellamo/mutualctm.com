@@ -73,8 +73,8 @@ FROM nginx:1.27-alpine AS web
 # `api` as the Docker Compose default and override API_HOST on Railway.
 ENV API_HOST=api
 ENV NGINX_ENVSUBST_FILTER=API_HOST
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 COPY nginx.conf /etc/nginx/templates/nginx.conf.template
 COPY --from=web-build /app/apps/web/dist /usr/share/nginx/html
 EXPOSE 8000
 CMD ["nginx","-g","daemon off;"]
-
