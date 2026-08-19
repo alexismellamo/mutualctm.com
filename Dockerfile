@@ -72,7 +72,8 @@ FROM nginx:1.27-alpine AS web
 # The official nginx entrypoint renders templates at container startup. Keep
 # `api` as the Docker Compose default and override API_HOST on Railway.
 ENV API_HOST=api
-ENV NGINX_ENVSUBST_FILTER=API_HOST
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+ENV NGINX_ENVSUBST_FILTER="^(API_HOST|NGINX_LOCAL_RESOLVERS)$"
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 COPY nginx.conf /etc/nginx/templates/nginx.conf.template
 COPY --from=web-build /app/apps/web/dist /usr/share/nginx/html
