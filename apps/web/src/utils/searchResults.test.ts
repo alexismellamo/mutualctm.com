@@ -17,18 +17,22 @@ describe('filterStrictIdentifierResults', () => {
     ]);
   });
 
-  test('preserves API order when the query is not exactly four digits', () => {
+  test('preserves API order for name searches', () => {
     const results = [{ folio: '1234' }, { folio: '0012' }];
 
-    expect(filterStrictIdentifierResults(results, '12')).toEqual(results);
+    expect(filterStrictIdentifierResults(results, 'Ale')).toEqual(results);
   });
 
-  test('keeps only exact license or badge matches', () => {
+  test('keeps only exact license, badge, or phone matches', () => {
     const results = [
       { licenciaNum: 'PRE-04-000112-X', gafeteNum: 'OTHER' },
       { licenciaNum: '04-000112', gafeteNum: 'GAF-1' },
     ];
 
     expect(filterStrictIdentifierResults(results, '04-000112')).toEqual([results[1]]);
+
+    const phoneResults = [{ phoneMx: '312123456789' }, { phoneMx: '3121234567' }];
+    expect(filterStrictIdentifierResults(phoneResults, '3121234567')).toEqual([phoneResults[1]]);
+    expect(filterStrictIdentifierResults(phoneResults, '312123')).toEqual([]);
   });
 });

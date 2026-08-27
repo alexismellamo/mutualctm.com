@@ -2,6 +2,7 @@ type UserWithIdentifiers = {
   folio?: string | null;
   licenciaNum?: string | null;
   gafeteNum?: string | null;
+  phoneMx?: string | null;
 };
 
 export function filterStrictIdentifierResults<T extends UserWithIdentifiers>(
@@ -19,8 +20,13 @@ export function filterStrictIdentifierResults<T extends UserWithIdentifiers>(
   const exactIdentifierMatches = users.filter(
     (user) =>
       user.licenciaNum?.trim().toLowerCase() === normalizedQuery ||
-      user.gafeteNum?.trim().toLowerCase() === normalizedQuery
+      user.gafeteNum?.trim().toLowerCase() === normalizedQuery ||
+      user.phoneMx?.trim() === query
   );
 
-  return exactIdentifierMatches.length > 0 ? exactIdentifierMatches : users;
+  if (exactIdentifierMatches.length > 0) {
+    return exactIdentifierMatches;
+  }
+
+  return /\d/.test(query) ? [] : users;
 }

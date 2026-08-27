@@ -48,6 +48,14 @@ describe('filterUsers', () => {
     expect(filterUsers([exactBadge], '1234')).toEqual([]);
   });
 
+  test('requires a complete phone number and returns only exact matches', () => {
+    const exactPhone = makeUser({ phoneMx: '3121234567' });
+    const accidentalMatch = makeUser({ firstName: 'Otra', phoneMx: '312123456789' });
+
+    expect(filterUsers([accidentalMatch, exactPhone], '3121234567')).toEqual([exactPhone]);
+    expect(filterUsers([exactPhone], '312123')).toEqual([]);
+  });
+
   test('keeps partial matching for names', () => {
     const namedUser = makeUser({ firstName: 'Alejandro' });
 
