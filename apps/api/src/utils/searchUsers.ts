@@ -35,6 +35,15 @@ export function filterUsers<T extends SearchableUser>(users: T[], rawQuery: stri
 
   if (searchWords.length === 1) {
     const searchTerm = searchWords[0];
+    const exactIdentifierMatches = users.filter(
+      (user) =>
+        user.licenciaNum.trim().toLowerCase() === searchTerm ||
+        user.gafeteNum.trim().toLowerCase() === searchTerm
+    );
+
+    if (exactIdentifierMatches.length > 0) {
+      return exactIdentifierMatches.slice(0, 20);
+    }
 
     return users
       .filter(
@@ -42,9 +51,7 @@ export function filterUsers<T extends SearchableUser>(users: T[], rawQuery: stri
           user.firstName.toLowerCase().includes(searchTerm) ||
           user.lastName.toLowerCase().includes(searchTerm) ||
           user.secondLastName?.toLowerCase().includes(searchTerm) ||
-          user.phoneMx.includes(searchQuery) ||
-          user.licenciaNum.trim().toLowerCase() === searchTerm ||
-          user.gafeteNum.includes(searchQuery)
+          user.phoneMx.includes(searchQuery)
       )
       .slice(0, 20);
   }

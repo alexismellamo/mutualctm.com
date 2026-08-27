@@ -34,9 +34,18 @@ describe('filterUsers', () => {
 
   test('requires a complete license number', () => {
     const exactLicense = makeUser({ licenciaNum: '04-000112' });
+    const accidentalMatch = makeUser({ firstName: 'Otra', gafeteNum: 'PRE-04-000112-X' });
 
-    expect(filterUsers([exactLicense], '04-000112')).toEqual([exactLicense]);
+    expect(filterUsers([accidentalMatch, exactLicense], '04-000112')).toEqual([exactLicense]);
     expect(filterUsers([exactLicense], '000112')).toEqual([]);
+  });
+
+  test('requires a complete badge number and returns only exact matches', () => {
+    const exactBadge = makeUser({ gafeteNum: 'GAF-1234' });
+    const accidentalMatch = makeUser({ firstName: 'Otra', gafeteNum: 'PRE-GAF-1234-X' });
+
+    expect(filterUsers([accidentalMatch, exactBadge], 'GAF-1234')).toEqual([exactBadge]);
+    expect(filterUsers([exactBadge], '1234')).toEqual([]);
   });
 
   test('keeps partial matching for names', () => {

@@ -1,6 +1,6 @@
 import { type Component, createEffect, createSignal, For, Show } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
-import { prioritizeExactFolio } from '../utils/searchResults';
+import { filterStrictIdentifierResults } from '../utils/searchResults';
 
 type Props = {
   onUserSelect: (user: User) => void;
@@ -58,7 +58,7 @@ const SearchPanel: Component<Props> = (props) => {
       }
 
       const data: { users?: User[] } = await response.json();
-      setUsers(prioritizeExactFolio(data.users || [], query));
+      setUsers(filterStrictIdentifierResults(data.users || [], query));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error de búsqueda');
       setUsers([]);
