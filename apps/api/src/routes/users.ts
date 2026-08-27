@@ -8,6 +8,7 @@ import {
 import type { Address, User } from '@prisma/client';
 import { Elysia, t } from 'elysia';
 import { withAuth } from '../middleware/withAuth';
+import { filterUsers } from '../utils/searchUsers';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
   .guard(withAuth, (app) => app)
@@ -201,56 +202,14 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
 
     const { query: searchQuery } = searchUsersSchema.parse(query);
 
-    // Convert search to lowercase for case-insensitive matching
-    const searchLower = searchQuery.trim().toLowerCase();
+    const allUsers = await prisma.user.findMany({
+      include: {
+        address: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
-    // Split the search query into individual words
-    const searchWords = searchLower.split(/\s+/).filter((word) => word.length > 0);
-
-    let users: (User & { address: Address | null })[];
-
-    if (searchWords.length === 1) {
-      // Single word search - get all users and filter in memory for case-insensitive search
-      const allUsers = await prisma.user.findMany({
-        include: {
-          address: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      const searchTerm = searchWords[0];
-      users = allUsers
-        .filter(
-          (user) =>
-            user.firstName.toLowerCase().includes(searchTerm) ||
-            user.lastName.toLowerCase().includes(searchTerm) ||
-            user.secondLastName?.toLowerCase().includes(searchTerm) ||
-            user.phoneMx.includes(searchQuery) ||
-            user.licenciaNum.includes(searchQuery) ||
-            user.gafeteNum.includes(searchQuery) ||
-            user.folio?.includes(searchQuery)
-        )
-        .slice(0, 20);
-    } else {
-      // Multiple words search - each word must match at least one name field (case insensitive)
-      const allUsers = await prisma.user.findMany({
-        include: {
-          address: true,
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-
-      users = allUsers
-        .filter((user) => {
-          return searchWords.every(
-            (word) =>
-              user.firstName.toLowerCase().includes(word) ||
-              user.lastName.toLowerCase().includes(word) ||
-              user.secondLastName?.toLowerCase().includes(word)
-          );
-        })
-        .slice(0, 20);
-    }
+    const users: (User & { address: Address | null })[] = filterUsers(allUsers, searchQuery);
 
     return { users };
   })

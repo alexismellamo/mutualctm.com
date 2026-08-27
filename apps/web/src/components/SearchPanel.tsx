@@ -1,5 +1,6 @@
 import { type Component, createEffect, createSignal, For, Show } from 'solid-js';
 import type { User } from '../pages/DashboardPage';
+import { prioritizeExactFolio } from '../utils/searchResults';
 
 type Props = {
   onUserSelect: (user: User) => void;
@@ -56,8 +57,8 @@ const SearchPanel: Component<Props> = (props) => {
         throw new Error('Error al buscar usuarios');
       }
 
-      const data = await response.json();
-      setUsers(data.users || []);
+      const data: { users?: User[] } = await response.json();
+      setUsers(prioritizeExactFolio(data.users || [], query));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error de búsqueda');
       setUsers([]);
@@ -92,13 +93,13 @@ const SearchPanel: Component<Props> = (props) => {
     <div class="card">
       <div class="space-y-4">
         {/* Header and Search Bar */}
-        <div class="flex items-center justify-between gap-4">
-          <h2 class="text-lg font-semibold text-ctm-text">Buscar Usuarios</h2>
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          <h2 class="text-lg font-semibold text-ctm-text sm:mr-auto">Buscar Usuarios</h2>
 
-          <div class="flex-1 max-w-2xl relative">
+          <div class="relative min-w-0 w-full sm:w-auto sm:basis-80 sm:flex-1 sm:max-w-2xl">
             <input
               type="text"
-              placeholder="Buscar por nombre, teléfono, credencial o gafete..."
+              placeholder="Buscar por nombre, folio, teléfono, credencial o gafete..."
               class="input-field w-full pr-10"
               value={searchQuery()}
               onInput={(e) => setSearchQuery(e.currentTarget.value)}
@@ -129,7 +130,11 @@ const SearchPanel: Component<Props> = (props) => {
             </div>
           </div>
 
-          <button type="button" onClick={props.onCreateNew} class="btn-secondary whitespace-nowrap">
+          <button
+            type="button"
+            onClick={props.onCreateNew}
+            class="btn-secondary w-full whitespace-nowrap sm:w-auto"
+          >
             + Crear Nuevo Usuario
           </button>
         </div>
@@ -164,6 +169,7 @@ const SearchPanel: Component<Props> = (props) => {
                   >
                     <div class="font-medium text-ctm-text text-sm">{formatUserName(user)}</div>
                     <div class="text-xs text-gray-600 mt-1 space-y-1">
+                      <div>Folio: {user.folio || 'Sin folio'}</div>
                       <div>Lic: {user.licenciaNum}</div>
                       <div>Tel: {user.phoneMx}</div>
                       <div class={getVigencyStatus(user).color}>{getVigencyStatus(user).text}</div>
