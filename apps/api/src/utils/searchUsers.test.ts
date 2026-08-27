@@ -15,7 +15,7 @@ const makeUser = (overrides: Partial<SearchableUser> = {}): SearchableUser => ({
 });
 
 describe('filterUsers', () => {
-  test('prioritizes an exact folio ahead of partial numeric matches', () => {
+  test('returns only the exact folio for a four-digit query', () => {
     const partialMatches = Array.from({ length: 20 }, (_, index) =>
       makeUser({ firstName: `Parcial ${index}`, licenciaNum: `LIC-0001-${index}` })
     );
@@ -23,12 +23,25 @@ describe('filterUsers', () => {
 
     const results = filterUsers([...partialMatches, exactFolio], '0001');
 
-    expect(results[0]).toEqual(exactFolio);
+    expect(results).toEqual([exactFolio]);
   });
 
   test('matches a historical unpadded folio with a padded query', () => {
     const historicalUser = makeUser({ folio: '1' });
 
     expect(filterUsers([historicalUser], '0001')).toEqual([historicalUser]);
+  });
+
+  test('requires a complete license number', () => {
+    const exactLicense = makeUser({ licenciaNum: '04-000112' });
+
+    expect(filterUsers([exactLicense], '04-000112')).toEqual([exactLicense]);
+    expect(filterUsers([exactLicense], '000112')).toEqual([]);
+  });
+
+  test('keeps partial matching for names', () => {
+    const namedUser = makeUser({ firstName: 'Alejandro' });
+
+    expect(filterUsers([namedUser], 'Ale')).toEqual([namedUser]);
   });
 });

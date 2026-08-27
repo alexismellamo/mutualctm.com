@@ -25,36 +25,28 @@ export function filterUsers<T extends SearchableUser>(users: T[], rawQuery: stri
     .split(/\s+/)
     .filter((word) => word.length > 0);
 
+  if (/^\d{4}$/.test(searchQuery)) {
+    const normalizedQueryFolio = normalizeFolio(searchQuery);
+
+    return users
+      .filter((user) => user.folio !== null && normalizeFolio(user.folio) === normalizedQueryFolio)
+      .slice(0, 20);
+  }
+
   if (searchWords.length === 1) {
     const searchTerm = searchWords[0];
-    const normalizedQueryFolio = normalizeFolio(searchQuery);
-    const shouldPrioritizeFolio = /^\d{4}$/.test(searchQuery);
-    const exactFolioMatches: T[] = [];
-    const otherMatches: T[] = [];
 
-    for (const user of users) {
-      const isExactFolio =
-        shouldPrioritizeFolio &&
-        user.folio !== null &&
-        normalizeFolio(user.folio) === normalizedQueryFolio;
-      const isMatch =
-        isExactFolio ||
-        user.firstName.toLowerCase().includes(searchTerm) ||
-        user.lastName.toLowerCase().includes(searchTerm) ||
-        user.secondLastName?.toLowerCase().includes(searchTerm) ||
-        user.phoneMx.includes(searchQuery) ||
-        user.licenciaNum.includes(searchQuery) ||
-        user.gafeteNum.includes(searchQuery) ||
-        user.folio?.includes(searchQuery);
-
-      if (isExactFolio) {
-        exactFolioMatches.push(user);
-      } else if (isMatch) {
-        otherMatches.push(user);
-      }
-    }
-
-    return [...exactFolioMatches, ...otherMatches].slice(0, 20);
+    return users
+      .filter(
+        (user) =>
+          user.firstName.toLowerCase().includes(searchTerm) ||
+          user.lastName.toLowerCase().includes(searchTerm) ||
+          user.secondLastName?.toLowerCase().includes(searchTerm) ||
+          user.phoneMx.includes(searchQuery) ||
+          user.licenciaNum.trim().toLowerCase() === searchTerm ||
+          user.gafeteNum.includes(searchQuery)
+      )
+      .slice(0, 20);
   }
 
   return users
