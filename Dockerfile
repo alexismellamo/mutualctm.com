@@ -50,8 +50,8 @@ ENV DATABASE_URL=file:/app/data/dev.db
 
 EXPOSE 3001
 
-# Use the start script which runs the built JS file
-CMD ["bun", "run", "start"]
+# Run the server as PID 1 so it receives shutdown signals directly.
+CMD ["bun", "./dist/index.js"]
 
 FROM oven/bun:1.2.21-alpine AS web-build
 WORKDIR /app
