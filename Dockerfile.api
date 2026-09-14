@@ -42,4 +42,4 @@ EXPOSE 3001
 
 # Apply pending schema migrations before accepting traffic. Railway mounts the
 # persistent volume before this command runs.
-CMD ["sh", "-c", "cd /app/packages/db && bun run migrate:prod && cd /app/apps/api && exec bun run start"]
+CMD ["sh", "-c", "cd /app/packages/db && bun run migrate:prod && cd /app/apps/api && exec bun ./dist/index.js"]

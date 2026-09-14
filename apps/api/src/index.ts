@@ -38,6 +38,14 @@ const app = new Elysia()
   )
   .listen(PORT);
 
+const shutdown = async () => {
+  await app.stop();
+  process.exit(0);
+};
+
+process.once('SIGTERM', shutdown);
+process.once('SIGINT', shutdown);
+
 console.log(`🚀 CTM API running at http://localhost:${PORT}`);
 
 export type App = typeof app;
