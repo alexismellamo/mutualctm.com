@@ -76,7 +76,7 @@ const CardPreview: Component<Props> = (props) => {
   };
 
   return (
-    <div class="card sticky top-8">
+    <div class="card sticky top-8 overflow-x-auto">
       <div class="mb-4 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-ctm-text">Vista Previa</h2>
 

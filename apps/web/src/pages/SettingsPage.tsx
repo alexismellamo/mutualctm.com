@@ -14,12 +14,14 @@ const SettingsPage: Component = () => {
       {/* Header */}
       <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
+          <div class="flex flex-col gap-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
             <div class="flex items-center">
               <img src={ctmLogo} alt="CTM Logo" class="w-8 h-8 object-contain" />
-              <h1 class="ml-3 text-xl font-semibold text-ctm-text">Configuración del Sistema</h1>
+              <h1 class="ml-3 text-lg font-semibold text-ctm-text sm:text-xl">
+                Configuración del Sistema
+              </h1>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span class="text-sm text-gray-600">{authStore.admin()?.email}</span>
               <A
                 href="/"

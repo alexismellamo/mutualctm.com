@@ -442,9 +442,9 @@ const UserForm: Component<Props> = (props) => {
         {/* Personal Information with Photo */}
         <div>
           <h3 class="text-md font-medium text-ctm-text mb-4">Información Personal</h3>
-          <div class="grid grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-3">
             {/* Left Column - Photo only */}
-            <div class="col-span-1">
+            <div class="sm:col-span-1">
               <PhotoManager
                 userId={props.user?.id}
                 currentPhotoPath={props.user?.photoPath}
@@ -453,7 +453,7 @@ const UserForm: Component<Props> = (props) => {
             </div>
 
             {/* Right Columns - All form fields */}
-            <div class="col-span-2 grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:col-span-2 md:grid-cols-2">
               <div>
                 <label for="firstName" class="block text-sm font-medium text-gray-700 mb-1">
                   Nombre *
@@ -586,7 +586,7 @@ const UserForm: Component<Props> = (props) => {
         {/* Address Information */}
         <div>
           <h3 class="text-md font-medium text-ctm-text mb-4">Domicilio</h3>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label for="street" class="block text-sm font-medium text-gray-700 mb-1">
                 Calle *
@@ -691,7 +691,7 @@ const UserForm: Component<Props> = (props) => {
                 onInput={(e) => updateFormData('address.postalCode', e.currentTarget.value)}
               />
             </div>
-            <div class="col-span-2">
+            <div class="sm:col-span-2">
               <label for="references" class="block text-sm font-medium text-gray-700 mb-1">
                 Referencias
               </label>

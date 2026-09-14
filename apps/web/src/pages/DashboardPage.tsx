@@ -105,13 +105,18 @@ const DashboardPage: Component = () => {
       {/* Header */}
       <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
+          <div class="flex flex-col gap-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
             <div class="flex items-center">
               <img src={ctmLogo} alt="CTM Logo" class="w-8 h-8 object-contain" />
-              <h1 class="ml-3 text-xl font-semibold text-ctm-text">Sistema de Credenciales</h1>
+              <h1 class="ml-3 text-lg font-semibold text-ctm-text sm:text-xl">
+                Sistema de Credenciales
+              </h1>
             </div>
-            <div class="flex items-center space-x-4">
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2">
               <span class="text-sm text-gray-600">{authStore.admin()?.email}</span>
+              <A href="/users" class="text-sm text-gray-500 hover:text-ctm-red transition-colors">
+                Usuarios
+              </A>
               <A
                 href="/settings"
                 class="text-sm text-gray-500 hover:text-ctm-red transition-colors flex items-center gap-1"
@@ -159,9 +164,9 @@ const DashboardPage: Component = () => {
         </div>
 
         {/* Two Panel Layout - Bottom */}
-        <div class="grid grid-cols-10 gap-8">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-10 lg:gap-8">
           {/* User Form - Left (70%) */}
-          <div class="col-span-7">
+          <div class="lg:col-span-7">
             <Show
               when={selectedUser() || isCreatingNew()}
               fallback={
@@ -196,7 +201,7 @@ const DashboardPage: Component = () => {
           </div>
 
           {/* Card Preview - Right (30%) */}
-          <div class="col-span-3">
+          <div class="min-w-0 lg:col-span-3">
             <CardPreview user={selectedUser()} />
           </div>
         </div>
