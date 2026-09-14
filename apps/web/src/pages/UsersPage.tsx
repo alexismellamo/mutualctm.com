@@ -1,8 +1,18 @@
 import { A } from '@solidjs/router';
-import { type Component, createMemo, createSignal, For, onMount, Show } from 'solid-js';
+import {
+  type Component,
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  Show,
+} from 'solid-js';
 import ctmLogo from '../assets/ctm-logo.png';
 import { authStore } from '../stores/auth';
 import { formatDate, getVigenciaStatus, type VigenciaStatus } from '../utils/dateUtils';
+import { filterStrictIdentifierResults } from '../utils/searchResults';
 
 type User = {
   id: string;
@@ -27,8 +37,14 @@ const statusLabels: Record<VigenciaStatus, { label: string; class: string }> = {
 const UsersPage: Component = () => {
   const [users, setUsers] = createSignal<User[]>([]);
   const [filter, setFilter] = createSignal<Filter>('all');
+  const [searchQuery, setSearchQuery] = createSignal('');
+  const [searchResults, setSearchResults] = createSignal<User[]>([]);
+  const [isSearching, setIsSearching] = createSignal(false);
+  const [searchError, setSearchError] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(true);
   const [error, setError] = createSignal('');
+  let searchTimeout: ReturnType<typeof setTimeout> | undefined;
+  let searchRequest = 0;
 
   onMount(async () => {
     try {
@@ -44,17 +60,60 @@ const UsersPage: Component = () => {
     }
   });
 
+  createEffect(() => {
+    const query = searchQuery().trim();
+    const request = ++searchRequest;
+
+    if (searchTimeout) clearTimeout(searchTimeout);
+
+    if (!query) {
+      setSearchResults([]);
+      setSearchError('');
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError('');
+    searchTimeout = setTimeout(async () => {
+      try {
+        const response = await fetch(`/api/v1/users?query=${encodeURIComponent(query)}`, {
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Error al buscar usuarios');
+
+        const data: { users?: User[] } = await response.json();
+        if (request === searchRequest) {
+          setSearchResults(filterStrictIdentifierResults(data.users || [], query));
+        }
+      } catch (err) {
+        if (request === searchRequest) {
+          setSearchError(err instanceof Error ? err.message : 'Error de búsqueda');
+          setSearchResults([]);
+        }
+      } finally {
+        if (request === searchRequest) setIsSearching(false);
+      }
+    }, 300);
+  });
+
+  onCleanup(() => {
+    if (searchTimeout) clearTimeout(searchTimeout);
+  });
+
+  const visibleUsers = createMemo(() => (searchQuery().trim() ? searchResults() : users()));
+
   const filteredUsers = createMemo(() => {
     const selectedFilter = filter();
     return selectedFilter === 'all'
-      ? users()
-      : users().filter((user) => getVigenciaStatus(user.vigencia) === selectedFilter);
+      ? visibleUsers()
+      : visibleUsers().filter((user) => getVigenciaStatus(user.vigencia) === selectedFilter);
   });
 
   const count = (selectedFilter: Filter) =>
     selectedFilter === 'all'
-      ? users().length
-      : users().filter((user) => getVigenciaStatus(user.vigencia) === selectedFilter).length;
+      ? visibleUsers().length
+      : visibleUsers().filter((user) => getVigenciaStatus(user.vigencia) === selectedFilter).length;
 
   const fullName = (user: User) =>
     [user.firstName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
@@ -130,6 +189,49 @@ const UsersPage: Component = () => {
             </fieldset>
           </div>
 
+          <div class="relative mb-6 w-full sm:max-w-2xl">
+            <label for="user-directory-search" class="sr-only">
+              Buscar usuarios
+            </label>
+            <input
+              id="user-directory-search"
+              type="search"
+              placeholder="Buscar por nombre, folio, teléfono, credencial o gafete..."
+              class="input-field w-full pr-10"
+              value={searchQuery()}
+              onInput={(event) => setSearchQuery(event.currentTarget.value)}
+            />
+            <div class="absolute right-3 top-1/2 -translate-y-1/2">
+              <Show
+                when={!isSearching()}
+                fallback={
+                  <div class="h-4 w-4 animate-spin rounded-full border-b-2 border-gray-400" />
+                }
+              >
+                <svg
+                  class="h-4 w-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <title>Buscar</title>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </Show>
+            </div>
+          </div>
+
+          <Show when={searchError()}>
+            <div class="mb-6 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {searchError()}
+            </div>
+          </Show>
+
           <Show
             when={!isLoading()}
             fallback={
@@ -204,9 +306,11 @@ const UsersPage: Component = () => {
                   </tbody>
                 </table>
               </div>
-              <Show when={filteredUsers().length === 0}>
+              <Show when={filteredUsers().length === 0 && !isSearching()}>
                 <p class="py-10 text-center text-sm text-gray-500">
-                  No hay usuarios en este estado.
+                  {searchQuery().trim()
+                    ? 'No se encontraron usuarios.'
+                    : 'No hay usuarios en este estado.'}
                 </p>
               </Show>
             </Show>
