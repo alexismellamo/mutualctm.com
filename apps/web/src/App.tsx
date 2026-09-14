@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import SettingsPage from './pages/SettingsPage';
 import SignatureTestPage from './pages/SignatureTestPage';
+import UsersPage from './pages/UsersPage';
 import ValidationPage from './pages/ValidationPage';
 import { authStore } from './stores/auth';
 
@@ -36,6 +37,7 @@ const App: Component = () => {
 
         {/* Protected routes - require authentication */}
         <Route path="/" component={() => <ProtectedRoute component={DashboardPage} />} />
+        <Route path="/users" component={() => <ProtectedRoute component={UsersPage} />} />
         <Route path="/settings" component={() => <ProtectedRoute component={SettingsPage} />} />
         <Route
           path="/signature-test"

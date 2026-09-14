@@ -62,6 +62,26 @@ export const isVigenciaValid = (vigencia: string): boolean => {
   return vigenciaDate >= today;
 };
 
+export type VigenciaStatus = 'active' | 'expired' | 'expiring';
+
+export const getVigenciaStatus = (
+  vigencia?: string | null,
+  now: Date = new Date()
+): VigenciaStatus => {
+  if (!vigencia) return 'expired';
+
+  const [year, month, day] = vigencia.split('T')[0].split('-').map(Number);
+  const vigenciaDate = new Date(year, month - 1, day);
+  if (!year || !month || !day || Number.isNaN(vigenciaDate.getTime())) return 'expired';
+
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  if (vigenciaDate < today) return 'expired';
+
+  const expiringLimit = new Date(today);
+  expiringLimit.setDate(expiringLimit.getDate() + 30);
+  return vigenciaDate <= expiringLimit ? 'expiring' : 'active';
+};
+
 /**
  * Calculates age from date of birth without timezone conversion
  */

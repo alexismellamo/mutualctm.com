@@ -5,6 +5,7 @@ import { Elysia } from 'elysia';
 import { authRoutes } from './routes/auth';
 import { healthRoutes } from './routes/health';
 import { settingsRoutes } from './routes/settings';
+import { userDirectoryRoutes } from './routes/user-directory';
 import { usersRoutes } from './routes/users';
 import { validationRoutes } from './routes/validation';
 
@@ -27,7 +28,13 @@ const app = new Elysia()
   .use(cookie())
   .get('/', () => ({ message: 'CTM Credenciales API', version: '1.0.0' }))
   .group('/api/v1', (app) =>
-    app.use(healthRoutes).use(validationRoutes).use(authRoutes).use(settingsRoutes).use(usersRoutes)
+    app
+      .use(healthRoutes)
+      .use(validationRoutes)
+      .use(authRoutes)
+      .use(settingsRoutes)
+      .use(userDirectoryRoutes)
+      .use(usersRoutes)
   )
   .listen(PORT);
 
