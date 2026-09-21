@@ -7,9 +7,9 @@
   "packageManager": "bun@1.2.21",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "bun --env-file=.env run turbo run dev",
     "build": "turbo run build",
-    "setup": "bun install && turbo run db:generate db:migrate db:seed",
+    "setup": "bun install && bun --env-file=.env run turbo run db:seed",
     "clean": "turbo run clean && rm -rf node_modules",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
