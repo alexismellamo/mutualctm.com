@@ -35,6 +35,15 @@ const statusLabels: Record<VigenciaStatus, { label: string; class: string }> = {
   expired: { label: 'Caducado', class: 'bg-red-100 text-red-800' },
 };
 
+const backupFilename = () => {
+  const now = new Date();
+  const part = (value: number, length = 2) => String(value).padStart(length, '0');
+  const timestamp = [now.getFullYear(), part(now.getMonth() + 1), part(now.getDate())].join('-');
+  const time = [part(now.getHours()), part(now.getMinutes()), part(now.getSeconds())].join('-');
+
+  return `respaldo-usuarios-${timestamp}_${time}-${part(now.getMilliseconds(), 3)}.csv`;
+};
+
 const UsersPage: Component = () => {
   const [users, setUsers] = createSignal<User[]>([]);
   const [filter, setFilter] = createSignal<Filter>('all');
@@ -129,7 +138,7 @@ const UsersPage: Component = () => {
       const url = URL.createObjectURL(file);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `respaldo-usuarios-${new Date().toISOString().slice(0, 10)}.csv`;
+      link.download = backupFilename();
       document.body.appendChild(link);
       link.click();
       link.remove();

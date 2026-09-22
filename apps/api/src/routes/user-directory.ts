@@ -84,11 +84,15 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
             date(user.updatedAt),
           ])
         );
-        const filenameDate = new Date().toISOString().slice(0, 10);
+        const filenameTimestamp = new Date()
+          .toISOString()
+          .replace('T', '_')
+          .replace(/[:.]/g, '-')
+          .replace('Z', 'UTC');
 
         return new Response(`\uFEFF${[csvRow(headers), ...rows].join('\n')}`, {
           headers: {
-            'Content-Disposition': `attachment; filename="respaldo-usuarios-${filenameDate}.csv"`,
+            'Content-Disposition': `attachment; filename="respaldo-usuarios-${filenameTimestamp}.csv"`,
             'Content-Type': 'text/csv; charset=utf-8',
           },
         });
