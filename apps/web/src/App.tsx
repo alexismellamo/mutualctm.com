@@ -1,5 +1,6 @@
 import { Route, Router } from '@solidjs/router';
 import { type Component, onMount, Show } from 'solid-js';
+import { Toaster } from 'solid-sonner';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import SettingsPage from './pages/SettingsPage';
@@ -31,6 +32,17 @@ const App: Component = () => {
 
   return (
     <div class="min-h-screen">
+      <Toaster
+        position="top-right"
+        richColors
+        closeButton
+        expand
+        visibleToasts={4}
+        duration={4500}
+        gap={12}
+        offset={20}
+        containerAriaLabel="Notificaciones"
+      />
       <Router>
         {/* Public validation route - no authentication required */}
         <Route path="/validation/:id" component={ValidationPage} />

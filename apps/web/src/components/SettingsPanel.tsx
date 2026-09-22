@@ -1,4 +1,5 @@
 import { type Component, createSignal, onMount } from 'solid-js';
+import { toast } from 'solid-sonner';
 
 type Settings = {
   id: number;
@@ -20,7 +21,6 @@ const SettingsPanel: Component = () => {
   const [isLoading, setIsLoading] = createSignal(false);
   const [isSaving, setIsSaving] = createSignal(false);
   const [error, setError] = createSignal('');
-  const [success, setSuccess] = createSignal('');
 
   const loadSettings = async () => {
     setIsLoading(true);
@@ -53,7 +53,8 @@ const SettingsPanel: Component = () => {
     e.preventDefault();
     setIsSaving(true);
     setError('');
-    setSuccess('');
+    const toastId = 'settings-save';
+    toast.loading('Guardando configuración...', { id: toastId });
 
     try {
       const response = await fetch('/api/v1/settings', {
@@ -72,12 +73,11 @@ const SettingsPanel: Component = () => {
 
       const data = await response.json();
       setSettings(data.settings);
-      setSuccess('Configuración actualizada correctamente');
-
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccess(''), 3000);
+      toast.success('Configuración actualizada.', { id: toastId });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al guardar');
+      const message = err instanceof Error ? err.message : 'Error al guardar';
+      setError(message);
+      toast.error(message, { id: toastId });
     } finally {
       setIsSaving(false);
     }
@@ -108,12 +108,6 @@ const SettingsPanel: Component = () => {
       {error() && (
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
           {error()}
-        </div>
-      )}
-
-      {success() && (
-        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
-          {success()}
         </div>
       )}
 

@@ -1,9 +1,9 @@
 import { type Component, createEffect, createSignal, Show } from 'solid-js';
+import { toast } from 'solid-sonner';
 import type { User } from '../pages/DashboardPage';
 import { getSignatureUrl } from '../utils/cardUtils';
 import PhotoManager from './PhotoManager';
 import SignatureModal from './SignatureModal';
-import Toast from './Toast';
 
 type Props = {
   user: User | null;
@@ -43,8 +43,6 @@ const UserForm: Component<Props> = (props) => {
 
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal('');
-  const [success, setSuccess] = createSignal('');
-  const [toast, setToast] = createSignal('');
   const [selectedPhoto, setSelectedPhoto] = createSignal<Blob | null>(null);
   const [selectedSignature, setSelectedSignature] = createSignal<Blob | null>(null);
   const [signaturePreview, setSignaturePreview] = createSignal<string>('');
@@ -126,6 +124,8 @@ const UserForm: Component<Props> = (props) => {
     if (props.isNew || !props.user?.id) return;
 
     setAutoSaveStatus('saving');
+    const toastId = `user-autosave-${props.user.id}`;
+    toast.loading('Guardando cambios...', { id: toastId });
 
     try {
       const data = formData();
@@ -146,6 +146,7 @@ const UserForm: Component<Props> = (props) => {
 
       setAutoSaveStatus('saved');
       props.onUserSaved(result.user);
+      toast.success('Cambios guardados.', { id: toastId });
 
       // Clear saved status after 2 seconds
       setTimeout(() => {
@@ -154,6 +155,7 @@ const UserForm: Component<Props> = (props) => {
     } catch (err) {
       setAutoSaveStatus('error');
       console.error('Autosave error:', err);
+      toast.error('No se pudieron guardar los cambios.', { id: toastId });
 
       // Clear error status after 3 seconds
       setTimeout(() => {
@@ -218,6 +220,8 @@ const UserForm: Component<Props> = (props) => {
     if (!props.user?.id) return;
 
     setAutoSaveStatus('saving');
+    const toastId = `photo-upload-${props.user.id}`;
+    toast.loading('Guardando foto...', { id: toastId });
     try {
       const formData = new FormData();
       formData.append('file', photoBlob, `photo-${Date.now()}.jpg`);
@@ -234,14 +238,17 @@ const UserForm: Component<Props> = (props) => {
         const updatedUser = { ...props.user, photoPath: result.path };
         props.onUserSaved(updatedUser);
         setAutoSaveStatus('saved');
+        toast.success('Foto actualizada.', { id: toastId });
         setTimeout(() => setAutoSaveStatus('idle'), 2000);
       } else {
         setAutoSaveStatus('error');
+        toast.error('No se pudo actualizar la foto.', { id: toastId });
         setTimeout(() => setAutoSaveStatus('idle'), 3000);
       }
     } catch (err) {
       setAutoSaveStatus('error');
       console.error('Photo upload error:', err);
+      toast.error('No se pudo actualizar la foto.', { id: toastId });
       setTimeout(() => setAutoSaveStatus('idle'), 3000);
     }
   };
@@ -250,6 +257,8 @@ const UserForm: Component<Props> = (props) => {
     if (!props.user?.id) return;
 
     setAutoSaveStatus('saving');
+    const toastId = `signature-upload-${props.user.id}`;
+    toast.loading('Guardando firma...', { id: toastId });
     try {
       const formData = new FormData();
       formData.append('file', signatureBlob, `signature-${Date.now()}.png`);
@@ -266,14 +275,17 @@ const UserForm: Component<Props> = (props) => {
         const updatedUser = { ...props.user, signaturePath: result.path };
         props.onUserSaved(updatedUser);
         setAutoSaveStatus('saved');
+        toast.success('Firma actualizada.', { id: toastId });
         setTimeout(() => setAutoSaveStatus('idle'), 2000);
       } else {
         setAutoSaveStatus('error');
+        toast.error('No se pudo actualizar la firma.', { id: toastId });
         setTimeout(() => setAutoSaveStatus('idle'), 3000);
       }
     } catch (err) {
       setAutoSaveStatus('error');
       console.error('Signature upload error:', err);
+      toast.error('No se pudo actualizar la firma.', { id: toastId });
       setTimeout(() => setAutoSaveStatus('idle'), 3000);
     }
   };
@@ -282,7 +294,10 @@ const UserForm: Component<Props> = (props) => {
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    setSuccess('');
+    const toastId = 'user-save';
+    toast.loading(props.isNew ? 'Guardando usuario...' : 'Actualizando usuario...', {
+      id: toastId,
+    });
 
     try {
       const data = formData();
@@ -303,8 +318,6 @@ const UserForm: Component<Props> = (props) => {
       if (!response.ok) {
         throw new Error(result.error || 'Error al guardar usuario');
       }
-
-      setSuccess(result.message);
 
       // Upload photo if one was selected
       const photo = selectedPhoto();
@@ -360,7 +373,9 @@ const UserForm: Component<Props> = (props) => {
 
       // Set success/error messages
       if (uploadErrors.length > 0) {
-        setError(`Usuario guardado pero ${uploadErrors.join(' y ')}`);
+        const message = `Usuario guardado pero ${uploadErrors.join(' y ')}`;
+        setError(message);
+        toast.error(message, { id: toastId });
       } else {
         const uploads = [];
         if (photo) uploads.push('Foto');
@@ -370,14 +385,14 @@ const UserForm: Component<Props> = (props) => {
             ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.`
             : '';
         const message = `${result.message}${uploadText}`;
-        setSuccess(message);
-        setToast(`${message} Listo para imprimir.`);
-        setTimeout(() => setToast(''), 5000);
+        toast.success(`${message} Listo para imprimir.`, { id: toastId });
       }
 
       props.onUserSaved(result.user);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error desconocido');
+      const message = err instanceof Error ? err.message : 'Error desconocido';
+      setError(message);
+      toast.error(message, { id: toastId });
     } finally {
       setIsLoading(false);
     }
@@ -385,7 +400,6 @@ const UserForm: Component<Props> = (props) => {
 
   return (
     <div class="card h-full overflow-y-auto">
-      <Toast message={toast()} onDismiss={() => setToast('')} />
       <div class="mb-6">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-ctm-text">
@@ -435,12 +449,6 @@ const UserForm: Component<Props> = (props) => {
       <Show when={error()}>
         <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
           {error()}
-        </div>
-      </Show>
-
-      <Show when={success()}>
-        <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
-          {success()}
         </div>
       </Show>
 
@@ -725,6 +733,7 @@ const UserForm: Component<Props> = (props) => {
                     onClick={() => {
                       setSelectedSignature(null);
                       setSignaturePreview('');
+                      toast.success('Firma descartada.');
                     }}
                     class="px-3 py-1 text-sm text-red-600 border border-red-300 rounded hover:bg-red-50 transition-colors duration-200"
                   >

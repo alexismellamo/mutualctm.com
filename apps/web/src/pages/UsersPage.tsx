@@ -9,8 +9,8 @@ import {
   onMount,
   Show,
 } from 'solid-js';
+import { toast } from 'solid-sonner';
 import ctmLogo from '../assets/ctm-logo.png';
-import Toast from '../components/Toast';
 import { authStore } from '../stores/auth';
 import { formatDate, getVigenciaStatus, type VigenciaStatus } from '../utils/dateUtils';
 import { filterStrictIdentifierResults } from '../utils/searchResults';
@@ -53,7 +53,6 @@ const UsersPage: Component = () => {
   const [searchError, setSearchError] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(true);
   const [error, setError] = createSignal('');
-  const [toast, setToast] = createSignal('');
   let searchTimeout: ReturnType<typeof setTimeout> | undefined;
   let searchRequest = 0;
 
@@ -130,6 +129,8 @@ const UsersPage: Component = () => {
     [user.firstName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
 
   const exportDirectory = async () => {
+    const toastId = 'directory-export';
+    toast.loading('Preparando respaldo CSV...', { id: toastId });
     try {
       const response = await fetch('/api/v1/user-directory/export', { credentials: 'include' });
       if (!response.ok) throw new Error('No se pudo generar el respaldo');
@@ -138,15 +139,16 @@ const UsersPage: Component = () => {
       const url = URL.createObjectURL(file);
       const link = document.createElement('a');
       link.href = url;
-      link.download = backupFilename();
+      link.download = `ctmmutual-usuarios-${backupFilename().replace('respaldo-usuarios-', '')}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      setToast('Respaldo descargado correctamente. Guárdalo en un lugar seguro.');
-      setTimeout(() => setToast(''), 5000);
+      toast.success('Respaldo CSV descargado correctamente.', { id: toastId });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo generar el respaldo');
+      const message = err instanceof Error ? err.message : 'No se pudo generar el respaldo';
+      setError(message);
+      toast.error(message, { id: toastId });
     }
   };
 
@@ -159,7 +161,6 @@ const UsersPage: Component = () => {
 
   return (
     <div class="min-h-screen bg-gray-50">
-      <Toast message={toast()} onDismiss={() => setToast('')} />
       <header class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div class="flex flex-col gap-3 py-3 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:py-0">
