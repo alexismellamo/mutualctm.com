@@ -10,15 +10,15 @@ export async function createPreviewAdmin(): Promise<void> {
   if (!isPullRequestEnvironment()) return;
 
   await prisma.admin.upsert({
-    where: { email: 'admin' },
+    where: { email: 'admin@ctm.local' },
     update: {
       password: await hash('admin123'),
     },
     create: {
-      email: 'admin',
+      email: 'admin@ctm.local',
       password: await hash('admin123'),
     },
   });
 
-  console.log('Created preview administrator: admin');
+  console.log('Created preview administrator: admin@ctm.local');
 }
