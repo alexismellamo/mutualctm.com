@@ -8,9 +8,12 @@ import { settingsRoutes } from './routes/settings';
 import { userDirectoryRoutes } from './routes/user-directory';
 import { usersRoutes } from './routes/users';
 import { validationRoutes } from './routes/validation';
+import { createPreviewAdmin } from './utils/preview';
 
 const PORT = process.env.API_PORT || 3001;
 const CORS_ORIGINS = process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000'];
+
+await createPreviewAdmin();
 
 const app = new Elysia()
   .use(
