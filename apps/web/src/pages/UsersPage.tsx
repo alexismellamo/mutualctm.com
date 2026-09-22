@@ -52,7 +52,6 @@ const UsersPage: Component = () => {
   const [isSearching, setIsSearching] = createSignal(false);
   const [searchError, setSearchError] = createSignal('');
   const [isLoading, setIsLoading] = createSignal(true);
-  const [isBackingUp, setIsBackingUp] = createSignal(false);
   const [error, setError] = createSignal('');
   let searchTimeout: ReturnType<typeof setTimeout> | undefined;
   let searchRequest = 0;
@@ -153,39 +152,6 @@ const UsersPage: Component = () => {
     }
   };
 
-  const downloadFullBackup = async () => {
-    if (isBackingUp()) return;
-
-    const toastId = 'full-backup';
-    setIsBackingUp(true);
-    toast.loading('Creando respaldo completo...', { id: toastId });
-
-    try {
-      const response = await fetch('/api/v1/user-directory/backup', { credentials: 'include' });
-      if (!response.ok) throw new Error('No se pudo crear el respaldo completo');
-
-      const file = await response.blob();
-      const url = URL.createObjectURL(file);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ctmmutual-respaldo-completo-${new Date().toISOString().replace(/[:.]/g, '-')}.tar.gz`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      toast.success('Respaldo completo descargado.', {
-        id: toastId,
-        description: 'Incluye la base de datos, fotos, firmas y recursos.',
-      });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'No se pudo crear el respaldo completo', {
-        id: toastId,
-      });
-    } finally {
-      setIsBackingUp(false);
-    }
-  };
-
   const filters: { value: Filter; label: string }[] = [
     { value: 'all', label: 'Todos' },
     { value: 'active', label: 'Activos' },
@@ -237,14 +203,6 @@ const UsersPage: Component = () => {
               <p class="text-sm text-gray-500">Listado completo por estado de vigencia</p>
             </div>
             <div class="flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={downloadFullBackup}
-                disabled={isBackingUp()}
-                class="btn-primary text-sm disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {isBackingUp() ? 'Creando respaldo...' : 'Descargar respaldo completo'}
-              </button>
               <button type="button" onClick={exportDirectory} class="btn-secondary text-sm">
                 Descargar usuarios CSV
               </button>
