@@ -384,8 +384,10 @@ const UserForm: Component<Props> = (props) => {
           uploads.length > 0
             ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.`
             : '';
-        const message = `${result.message}${uploadText}`;
-        toast.success(`${message} Listo para imprimir.`, { id: toastId });
+        toast.success(result.message, {
+          id: toastId,
+          description: `${uploadText.trim() || 'Datos guardados correctamente.'} Listo para imprimir.`,
+        });
       }
 
       props.onUserSaved(result.user);
