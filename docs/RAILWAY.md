@@ -49,6 +49,11 @@ backups. Create a manual backup before each application or schema change.
 Export a second off-platform copy of `dev.db` and `storage/` regularly. Railway
 volume backups can only be restored inside the same project and environment.
 
+The authenticated **Usuarios** page also provides **Descargar respaldo completo**.
+It downloads an off-platform `.tar.gz` with a consistent SQLite snapshot plus
+the actual photos, signatures, and institutional assets. Keep a copy somewhere
+outside Railway; it complements, rather than replaces, Railway volume backups.
+
 ## Deploy and rollback
 
 1. Deploy and test with a Railway-provided domain.

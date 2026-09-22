@@ -206,7 +206,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
       include: {
         address: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ lastName: 'asc' }, { secondLastName: 'asc' }, { firstName: 'asc' }],
     });
 
     const users: (User & { address: Address | null })[] = filterUsers(allUsers, searchQuery);

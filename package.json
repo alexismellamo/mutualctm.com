@@ -4,7 +4,7 @@
   "description": "CTM Credential Admin - Internal app for creating, editing, and printing credential cards",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.2.21",
+  "packageManager": "bun@1.4.2",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev": "bun --env-file=.env run turbo run dev",

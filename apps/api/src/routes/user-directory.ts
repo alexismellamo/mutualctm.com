@@ -1,6 +1,7 @@
 import { prisma } from '@ctm/db';
 import { Elysia } from 'elysia';
 import { withAuth } from '../middleware/withAuth';
+import { createFullBackup } from '../utils/backup';
 import { csvRow } from '../utils/csv';
 
 type ExportUser = {
@@ -13,6 +14,8 @@ type ExportUser = {
   phoneMx: string;
   licenciaNum: string;
   gafeteNum: string;
+  photoPath: string | null;
+  signaturePath: string | null;
   createdAt: Date;
   updatedAt: Date;
   address: {
@@ -32,10 +35,24 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
   withAuth,
   (app) =>
     app
+      .get('/backup', async ({ set }) => {
+        try {
+          const { blob, filename } = await createFullBackup();
+          return new Response(blob, {
+            headers: {
+              'Content-Disposition': `attachment; filename="${filename}"`,
+              'Content-Type': 'application/gzip',
+            },
+          });
+        } catch (error) {
+          set.status = 500;
+          return { error: error instanceof Error ? error.message : 'No se pudo crear el respaldo' };
+        }
+      })
       .get('/export', async () => {
         const users = await prisma.user.findMany({
           include: { address: true },
-          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+          orderBy: [{ lastName: 'asc' }, { secondLastName: 'asc' }, { firstName: 'asc' }],
         });
         const headers = [
           'Folio',
@@ -56,6 +73,8 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
           'Estado',
           'Código postal',
           'Referencias',
+          'Foto',
+          'Firma',
           'Creado el',
           'Actualizado el',
         ];
@@ -80,6 +99,8 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
             user.address?.state,
             user.address?.postalCode,
             user.address?.references,
+            user.photoPath,
+            user.signaturePath,
             date(user.createdAt),
             date(user.updatedAt),
           ])
@@ -92,7 +113,7 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
 
         return new Response(`\uFEFF${[csvRow(headers), ...rows].join('\n')}`, {
           headers: {
-            'Content-Disposition': `attachment; filename="respaldo-usuarios-${filenameTimestamp}.csv"`,
+            'Content-Disposition': `attachment; filename="ctmmutual-usuarios-${filenameTimestamp}.csv"`,
             'Content-Type': 'text/csv; charset=utf-8',
           },
         });
@@ -110,7 +131,7 @@ export const userDirectoryRoutes = new Elysia({ prefix: '/user-directory' }).gua
             folio: true,
             vigencia: true,
           },
-          orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
+          orderBy: [{ lastName: 'asc' }, { secondLastName: 'asc' }, { firstName: 'asc' }],
         }),
       }))
 );
