@@ -3,6 +3,7 @@ import type { User } from '../pages/DashboardPage';
 import { getSignatureUrl } from '../utils/cardUtils';
 import PhotoManager from './PhotoManager';
 import SignatureModal from './SignatureModal';
+import Toast from './Toast';
 
 type Props = {
   user: User | null;
@@ -43,6 +44,7 @@ const UserForm: Component<Props> = (props) => {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal('');
   const [success, setSuccess] = createSignal('');
+  const [toast, setToast] = createSignal('');
   const [selectedPhoto, setSelectedPhoto] = createSignal<Blob | null>(null);
   const [selectedSignature, setSelectedSignature] = createSignal<Blob | null>(null);
   const [signaturePreview, setSignaturePreview] = createSignal<string>('');
@@ -367,7 +369,10 @@ const UserForm: Component<Props> = (props) => {
           uploads.length > 0
             ? ` ${uploads.join(' y ')} guardada${uploads.length > 1 ? 's' : ''} exitosamente.`
             : '';
-        setSuccess(`${result.message}${uploadText}`);
+        const message = `${result.message}${uploadText}`;
+        setSuccess(message);
+        setToast(`${message} Listo para imprimir.`);
+        setTimeout(() => setToast(''), 5000);
       }
 
       props.onUserSaved(result.user);
@@ -380,6 +385,7 @@ const UserForm: Component<Props> = (props) => {
 
   return (
     <div class="card h-full overflow-y-auto">
+      <Toast message={toast()} onDismiss={() => setToast('')} />
       <div class="mb-6">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-semibold text-ctm-text">
