@@ -9,6 +9,7 @@ import {
   onMount,
   Show,
 } from 'solid-js';
+import { toast } from 'solid-sonner';
 import ctmLogo from '../assets/ctm-logo.png';
 import { authStore } from '../stores/auth';
 import { formatDate, getVigenciaStatus, type VigenciaStatus } from '../utils/dateUtils';
@@ -32,6 +33,15 @@ const statusLabels: Record<VigenciaStatus, { label: string; class: string }> = {
   active: { label: 'Activo', class: 'bg-green-100 text-green-800' },
   expiring: { label: 'Próximo a vencer', class: 'bg-amber-100 text-amber-800' },
   expired: { label: 'Caducado', class: 'bg-red-100 text-red-800' },
+};
+
+const backupFilename = () => {
+  const now = new Date();
+  const part = (value: number, length = 2) => String(value).padStart(length, '0');
+  const timestamp = [now.getFullYear(), part(now.getMonth() + 1), part(now.getDate())].join('-');
+  const time = [part(now.getHours()), part(now.getMinutes()), part(now.getSeconds())].join('-');
+
+  return `respaldo-usuarios-${timestamp}_${time}-${part(now.getMilliseconds(), 3)}.csv`;
 };
 
 const UsersPage: Component = () => {
@@ -118,6 +128,30 @@ const UsersPage: Component = () => {
   const fullName = (user: User) =>
     [user.firstName, user.lastName, user.secondLastName].filter(Boolean).join(' ');
 
+  const exportDirectory = async () => {
+    const toastId = 'directory-export';
+    toast.loading('Preparando respaldo CSV...', { id: toastId });
+    try {
+      const response = await fetch('/api/v1/user-directory/export', { credentials: 'include' });
+      if (!response.ok) throw new Error('No se pudo generar el respaldo');
+
+      const file = await response.blob();
+      const url = URL.createObjectURL(file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `ctmmutual-usuarios-${backupFilename().replace('respaldo-usuarios-', '')}`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success('Respaldo CSV descargado correctamente.', { id: toastId });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'No se pudo generar el respaldo';
+      setError(message);
+      toast.error(message, { id: toastId });
+    }
+  };
+
   const filters: { value: Filter; label: string }[] = [
     { value: 'all', label: 'Todos' },
     { value: 'active', label: 'Activos' },
@@ -168,25 +202,30 @@ const UsersPage: Component = () => {
               <h2 class="text-lg font-semibold text-ctm-text">Usuarios</h2>
               <p class="text-sm text-gray-500">Listado completo por estado de vigencia</p>
             </div>
-            <fieldset class="flex flex-wrap gap-2">
-              <legend class="sr-only">Filtrar usuarios por vigencia</legend>
-              <For each={filters}>
-                {(item) => (
-                  <button
-                    type="button"
-                    onClick={() => setFilter(item.value)}
-                    aria-pressed={filter() === item.value}
-                    class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      filter() === item.value
-                        ? 'bg-ctm-red text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {item.label} ({count(item.value)})
-                  </button>
-                )}
-              </For>
-            </fieldset>
+            <div class="flex flex-wrap items-center gap-3">
+              <button type="button" onClick={exportDirectory} class="btn-secondary text-sm">
+                Descargar usuarios CSV
+              </button>
+              <fieldset class="flex flex-wrap gap-2">
+                <legend class="sr-only">Filtrar usuarios por vigencia</legend>
+                <For each={filters}>
+                  {(item) => (
+                    <button
+                      type="button"
+                      onClick={() => setFilter(item.value)}
+                      aria-pressed={filter() === item.value}
+                      class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        filter() === item.value
+                          ? 'bg-ctm-red text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {item.label} ({count(item.value)})
+                    </button>
+                  )}
+                </For>
+              </fieldset>
+            </div>
           </div>
 
           <div class="relative mb-6 w-full sm:max-w-2xl">

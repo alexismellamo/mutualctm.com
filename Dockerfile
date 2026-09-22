@@ -1,8 +1,8 @@
-FROM oven/bun:1.2.21-alpine AS base
+FROM oven/bun:1.4.2-alpine AS base
 WORKDIR /app
 
 # Install curl for health checks
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl openssl
 
 # Copy package files for dependency resolution
 COPY package.json bun.lock turbo.json biome.json ./
@@ -22,11 +22,11 @@ COPY packages ./packages
 RUN bun run db:generate
 RUN bun run build
 
-FROM oven/bun:1.2.21-alpine AS api
+FROM oven/bun:1.4.2-alpine AS api
 WORKDIR /app
 
 # Install curl for health checks
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl openssl
 
 # Copy built application
 COPY --from=base /app/node_modules ./node_modules
@@ -53,9 +53,9 @@ EXPOSE 3001
 # Run the server as PID 1 so it receives shutdown signals directly.
 CMD ["bun", "./dist/index.js"]
 
-FROM oven/bun:1.2.21-alpine AS web-build
+FROM oven/bun:1.4.2-alpine AS web-build
 WORKDIR /app
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl openssl
 COPY package.json bun.lock turbo.json biome.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/schema/package.json ./packages/schema/

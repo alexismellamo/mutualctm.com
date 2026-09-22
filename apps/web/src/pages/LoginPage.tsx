@@ -38,14 +38,14 @@ const LoginPage: Component<Props> = (props) => {
           <form onSubmit={handleSubmit} class="space-y-6">
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                Correo Electrónico
+                Usuario o correo electrónico
               </label>
               <input
                 id="email"
-                type="email"
+                type="text"
                 required
                 class="input-field"
-                placeholder="admin@ctm.local"
+                placeholder="admin"
                 value={email()}
                 onInput={(e) => setEmail(e.currentTarget.value)}
               />
