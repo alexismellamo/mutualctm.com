@@ -9,15 +9,16 @@ const isPullRequestEnvironment = () => {
 export async function createPreviewAdmin(): Promise<void> {
   if (!isPullRequestEnvironment()) return;
 
-  const adminCount = await prisma.admin.count();
-  if (adminCount > 0) return;
-
-  await prisma.admin.create({
-    data: {
-      email: 'preview@mutualctm.local',
-      password: await hash('preview123'),
+  await prisma.admin.upsert({
+    where: { email: 'admin' },
+    update: {
+      password: await hash('admin123'),
+    },
+    create: {
+      email: 'admin',
+      password: await hash('admin123'),
     },
   });
 
-  console.log('Created preview administrator: preview@mutualctm.local');
+  console.log('Created preview administrator: admin');
 }

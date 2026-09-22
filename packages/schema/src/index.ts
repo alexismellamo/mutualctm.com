@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Auth schemas
 export const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
+  email: z.string().min(1, 'Usuario o correo requerido'),
   password: z.string().min(1, 'Contraseña requerida'),
 });
 
